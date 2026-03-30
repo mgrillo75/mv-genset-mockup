@@ -413,19 +413,21 @@
       border-bottom-color: #34d399;
     }
 
-    /* All tab panels share same bounds */
+    /* Base card — identical for every tab */
     .tab-panel {
-      min-height: 560px;
-    }
-
-    /* Main card wrapper */
-    .main-card {
       background: linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(15, 23, 42, 0.3) 100%);
       border: 1px solid rgba(30, 41, 59, 0.8);
       border-radius: 1rem;
       padding: 1.5rem;
       backdrop-filter: blur(8px);
       box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.03);
+      height: 680px;
+      overflow: hidden;
+    }
+
+    /* Tag Data needs vertical scroll */
+    .tab-panel.tab-scroll {
+      overflow-y: auto;
     }
   </style>
 </head>
@@ -442,8 +444,7 @@
     </div>
 
     <!-- Tab: Overview -->
-    <div id="tab-overview" class="tab-panel" style="display:block;">
-    <div class="main-card flex flex-col lg:flex-row gap-6">
+    <div id="tab-overview" class="tab-panel flex flex-col lg:flex-row gap-6" style="display:flex;">
 
     <!-- Left Column: Generator Visual (Compact Sidebar) -->
     <div class="lg:w-72 flex-shrink-0 flex flex-col gap-6">
@@ -651,12 +652,11 @@
       </div>
 
     </div>
-    </div><!-- end main-card -->
     </div><!-- end tab-overview -->
 
     <!-- Tab: Engine Diagnostics -->
     <div id="tab-engine" class="tab-panel" style="display:none;">
-      <div class="main-card flex flex-col gap-4">
+      <div class="flex flex-col gap-4">
 
         <!-- Engine Speed -->
         <div class="grid grid-cols-1 gap-3">
@@ -761,7 +761,7 @@
 
     <!-- Tab: Control / Modes -->
     <div id="tab-control" class="tab-panel" style="display:none;">
-      <div class="main-card flex flex-col lg:flex-row gap-6">
+      <div class="flex flex-col lg:flex-row gap-6">
 
         <!-- Left: Mode & Authority -->
         <div class="flex-grow flex flex-col gap-4">
@@ -900,7 +900,7 @@
 
     <!-- Tab: Alarms / Alerts -->
     <div id="tab-alarms" class="tab-panel" style="display:none;">
-      <div class="main-card flex flex-col gap-4">
+      <div class="flex flex-col gap-4">
 
         <!-- Summary Badges -->
         <div class="flex gap-4">
@@ -1008,8 +1008,7 @@
     </div>
 
     <!-- Tab: Tag Data -->
-    <div id="tab-tagdata" class="tab-panel" style="display:none;">
-      <div class="main-card">
+    <div id="tab-tagdata" class="tab-panel tab-scroll" style="display:none;">
       <div class="bg-[#0f172a] border border-slate-800 rounded-lg overflow-hidden">
         <table class="w-full text-sm">
           <thead class="sticky top-0 bg-[#0f172a] z-10">
@@ -1349,7 +1348,6 @@
           </tbody>
         </table>
       </div>
-      </div><!-- end main-card -->
     </div>
 
   </div>
@@ -1366,7 +1364,11 @@
       });
       // Show selected panel
       var panel = document.getElementById('tab-' + name);
-      panel.style.display = 'block';
+      if (name === 'overview') {
+        panel.style.display = 'flex';
+      } else {
+        panel.style.display = 'block';
+      }
       // Activate button
       btn.classList.add('active');
     }
