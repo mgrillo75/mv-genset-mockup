@@ -1,0 +1,1377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modern Genset Panel V3</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            slate: {
+              750: '#293548',
+              800: '#1e293b',
+              850: '#151f32',
+              900: '#0f172a',
+              950: '#050b14',
+            },
+            emerald: {
+              400: '#34d399',
+              500: '#10b981',
+            },
+            amber: {
+              400: '#fbbf24',
+              500: '#f59e0b',
+            },
+            blue: {
+              400: '#60a5fa',
+              500: '#3b82f6',
+              600: '#2563eb',
+            },
+            gray: {
+              50: '#f9fafb',
+              100: '#f3f4f6',
+              200: '#e5e7eb',
+              300: '#d1d5db',
+              400: '#9ca3af',
+              500: '#6b7280',
+              600: '#4b5563',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #050b14;
+      color: #f8fafc;
+      font-family: system-ui, -apple-system, sans-serif;
+      background-image: radial-gradient(circle at 50% 0%, #0f172a 0%, #050b14 70%);
+      background-attachment: fixed;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    
+    .gen-circle {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
+      border: 2px solid #10b981;
+      box-shadow: 0 0 25px rgba(16, 185, 129, 0.2);
+      color: #10b981;
+    }
+
+    /* Dense Metric Cards */
+    .metric-card {
+      background-color: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 0.5rem;
+      padding: 0.875rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      transition: border-color 0.2s;
+    }
+    
+    .metric-card:hover {
+      border-color: #334155;
+    }
+
+    .icon-box {
+      width: 2.75rem;
+      height: 2.75rem;
+      border-radius: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .metric-content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-width: 0;
+    }
+
+    .metric-label {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 0.125rem;
+    }
+
+    .metric-value {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #f8fafc;
+      display: flex;
+      align-items: baseline;
+      gap: 0.25rem;
+      line-height: 1.2;
+    }
+
+    .metric-unit {
+      font-size: 0.75rem;
+      color: #64748b;
+      font-weight: 400;
+    }
+
+    /* Buttons */
+    .btn-control {
+      background-color: #1e293b;
+      color: #cbd5e1;
+      border: 1px solid #334155;
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      width: 100%;
+    }
+    .btn-control:hover {
+      background-color: #334155;
+      color: white;
+    }
+    
+    .btn-primary {
+      background-color: #10b981;
+      color: #022c22;
+      border: 1px solid #059669;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+    }
+    .btn-primary:hover {
+      background-color: #059669;
+      color: white;
+    }
+
+    /* Setpoint Cards */
+    .setpoint-card {
+      background-color: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 0.5rem;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      flex: 1; /* allow growing */
+    }
+
+    /* V3 Operator Panel Style */
+    .operator-panel {
+      background: linear-gradient(to bottom, #9ca3af, #d1d5db);
+      border-radius: 0.5rem;
+      padding: 0.5rem;
+      width: 100%;
+      height: 100%;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      border: 1px solid #6b7280;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-header {
+      background: linear-gradient(to bottom, #6b7280, #4b5563);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      font-weight: 600;
+      font-size: 0.875rem;
+      border-top-left-radius: 0.375rem;
+      border-top-right-radius: 0.375rem;
+      margin: -0.5rem -0.5rem 0.5rem -0.5rem;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .panel-content {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      justify-content: space-between;
+      flex-grow: 1;
+    }
+
+    /* Column Styles */
+    .control-column {
+      background-color: #d1d5db;
+      border: 1px solid #9ca3af;
+      border-radius: 0.25rem;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      height: 100%;
+      box-shadow: inset 0 1px 3px rgba(255,255,255,0.5);
+    }
+
+    .column-header {
+      color: white;
+      font-weight: 600;
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+    }
+
+    /* Button Styles */
+    .btn-v3 {
+      background: linear-gradient(to bottom, #f3f4f6, #d1d5db);
+      border: 1px solid #9ca3af;
+      border-top-color: #e5e7eb;
+      color: #374151;
+      font-weight: 500;
+      font-size: 0.875rem;
+      padding: 0.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-grow: 1;
+    }
+
+    .btn-v3:hover {
+      background: linear-gradient(to bottom, #e5e7eb, #9ca3af);
+    }
+
+    .btn-v3:active {
+      background: #9ca3af;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+      border-top-color: #6b7280;
+    }
+
+    .btn-v3.active-blue {
+      background: linear-gradient(to bottom, #60a5fa, #3b82f6);
+      color: white;
+      border-color: #2563eb;
+      border-top-color: #93c5fd;
+      text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+    }
+
+    .btn-v3.active-blue:hover {
+      background: linear-gradient(to bottom, #3b82f6, #2563eb);
+    }
+
+    .btn-v3.active-green {
+      background: linear-gradient(to bottom, #34d399, #10b981);
+      color: white;
+      border-color: #059669;
+      border-top-color: #6ee7b7;
+      text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+    }
+
+    /* Middle section (Start/Stop) */
+    .middle-controls {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 2px;
+      position: relative;
+      height: 100%;
+    }
+
+    .btn-action {
+      background: linear-gradient(to bottom, #d1d5db, #9ca3af);
+      border: 1px solid #6b7280;
+      color: white;
+      text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+      border-radius: 0.125rem;
+      padding: 0.5rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 70px;
+      height: 48px;
+      text-align: center;
+      position: relative;
+      z-index: 10;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .btn-action:hover {
+      background: linear-gradient(to bottom, #e5e7eb, #9ca3af);
+    }
+    
+    .btn-action:active {
+      background: #9ca3af;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    /* Connector Arrows */
+    .connector {
+      position: absolute;
+      width: 10px;
+      height: 3px;
+      background-color: #9ca3af;
+      top: 50%;
+      z-index: 0;
+    }
+
+    .connector-left {
+      left: -10px; /* Stretch into the margin space */
+    }
+    
+    .connector-left::before {
+      content: '';
+      position: absolute;
+      left: -20px; /* The pointy triangle bit */
+      top: -14.5px;
+      border-top: 16px solid transparent;
+      border-bottom: 16px solid transparent;
+      border-right: 24px solid #9ca3af;
+    }
+
+    .connector-right {
+      right: -16px;
+    }
+
+    .connector-right::after {
+      content: '';
+      position: absolute;
+      right: -2px;
+      top: -3px;
+      border-top: 4px solid transparent;
+      border-bottom: 4px solid transparent;
+      border-left: 6px solid #9ca3af;
+    }
+
+    /* Lock Icon */
+    .lock-icon-container {
+      background: linear-gradient(to bottom, #e5e7eb, #d1d5db);
+      border-top: 1px solid #9ca3af;
+      padding: 0.5rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-bottom-left-radius: 0.25rem;
+      border-bottom-right-radius: 0.25rem;
+      margin-top: auto;
+    }
+
+    .lock-icon {
+      color: #b45309;
+      font-size: 1rem;
+      filter: drop-shadow(0 1px 1px rgba(255,255,255,0.8));
+    }
+    
+    .radio-wave {
+      position: absolute;
+      color: #9ca3af;
+      font-size: 0.6rem;
+      top: -6px;
+      left: -8px;
+      transform: rotate(-45deg);
+    }
+
+    /* Tab Bar */
+    .tab-bar {
+      display: flex;
+      gap: 0;
+      background-color: #0f172a;
+      border-bottom: 1px solid #1e293b;
+      padding: 0 0.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .tab-btn {
+      padding: 0.75rem 1.25rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #94a3b8;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      font-family: inherit;
+      margin-bottom: -1px;
+    }
+
+    .tab-btn:hover {
+      color: #cbd5e1;
+    }
+
+    .tab-btn.active {
+      color: #34d399;
+      border-bottom-color: #34d399;
+    }
+
+    /* Base card — identical for every tab */
+    .tab-panel {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(15, 23, 42, 0.3) 100%);
+      border: 1px solid rgba(30, 41, 59, 0.8);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.03);
+      height: 680px;
+      overflow: hidden;
+    }
+
+    /* Tag Data needs vertical scroll */
+    .tab-panel.tab-scroll {
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body class="min-h-screen p-4 md:p-6 lg:p-8 flex justify-center items-center w-full">
+  <div class="max-w-[90rem] w-full flex flex-col gap-0 justify-center">
+
+    <!-- Tab Bar -->
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('overview', this)">Overview</button>
+      <button class="tab-btn" onclick="switchTab('engine', this)">Engine Diagnostics</button>
+      <button class="tab-btn" onclick="switchTab('control', this)">Control / Modes</button>
+      <button class="tab-btn" onclick="switchTab('alarms', this)">Alarms / Alerts</button>
+      <button class="tab-btn" onclick="switchTab('tagdata', this)">Tag Data</button>
+    </div>
+
+    <!-- Tab: Overview -->
+    <div id="tab-overview" class="tab-panel flex flex-col lg:flex-row gap-6" style="display:flex;">
+
+    <!-- Left Column: Generator Visual (Compact Sidebar) -->
+    <div class="lg:w-72 flex-shrink-0 flex flex-col gap-6">
+      <div class="bg-[#0f172a] border border-slate-800 rounded-lg p-5 flex flex-col items-center h-full">
+        <div class="w-1 h-8 bg-slate-600"></div>
+        <div class="flex items-center justify-center text-emerald-500 drop-shadow-[0_0_8px_rgba(16,185,129,0.5)] my-1">
+          <svg width="48" height="60" viewBox="0 0 32 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="16" y1="0" x2="16" y2="4" stroke="currentColor" stroke-width="2" />
+            <circle cx="16" cy="7" r="3" stroke="currentColor" stroke-width="2" />
+            <circle cx="16" cy="33" r="3" stroke="currentColor" stroke-width="2" />
+            <line x1="16" y1="36" x2="16" y2="40" stroke="currentColor" stroke-width="2" />
+            <path d="M 14.5 9.5 Q -1 20 14.5 30.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            <line x1="0" y1="20" x2="7" y2="20" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          </svg>
+        </div>
+        <div class="w-1 h-8 bg-slate-600"></div>
+        <div class="gen-circle my-3">
+          <span class="relative z-10 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="20" viewBox="0 0 40 20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M 4 10 Q 12 -2 20 10 T 36 10"></path>
+            </svg>
+          </span>
+        </div>
+        <div class="mt-4 mb-6 px-4 py-1.5 bg-emerald-500/10 text-emerald-400 text-base font-bold rounded-full border border-emerald-500/20 flex items-center gap-2">
+          <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
+          G5
+        </div>
+        <div class="w-full flex flex-col gap-2 mt-auto">
+          <button class="btn-control btn-primary">Start</button>
+          <button class="btn-control">Stop</button>
+          <button class="btn-control">Automatic</button>
+          <button class="btn-control">Alarm Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="flex-grow flex flex-col gap-4">
+
+      <!-- Header Bar -->
+      <div class="flex items-center justify-between bg-[#0f172a] border border-slate-800 rounded-lg px-5 py-3">
+        <div class="flex items-center gap-4">
+          <span class="text-lg font-bold text-white">MV Genset — G5</span>
+          <span class="px-3 py-1 bg-emerald-500/15 text-emerald-400 text-xs font-bold rounded-full border border-emerald-500/30 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Running
+          </span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="btn-control btn-primary" style="width:auto; padding:0.375rem 0.75rem; font-size:0.75rem;">Start</button>
+          <button class="btn-control" style="width:auto; padding:0.375rem 0.75rem; font-size:0.75rem;">Stop</button>
+          <button class="btn-control" style="width:auto; padding:0.375rem 0.75rem; font-size:0.75rem;">Alarm Ack</button>
+          <button class="btn-control" style="width:auto; padding:0.375rem 0.75rem; font-size:0.75rem;">Block</button>
+          <button class="btn-control" style="width:auto; padding:0.375rem 0.75rem; font-size:0.75rem;">Auto</button>
+          <button class="btn-control" style="width:auto; padding:0.375rem 0.75rem; font-size:0.75rem;">Manual</button>
+          <div class="flex items-center gap-1 ml-2 text-xs text-slate-400">
+            <span>Priority</span>
+            <select class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded px-1.5 py-0.5">
+              <option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Electrical Section -->
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div class="metric-card">
+          <div class="icon-box bg-emerald-500/10 text-emerald-400"><i class="fa-solid fa-bolt text-xl"></i></div>
+          <div class="metric-content">
+            <div class="metric-label">Real Power</div>
+            <div class="metric-value">1,624 <span class="metric-unit">kW</span></div>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="icon-box bg-blue-500/10 text-blue-400"><i class="fa-solid fa-bolt text-xl"></i></div>
+          <div class="metric-content">
+            <div class="metric-label">Reactive Power</div>
+            <div class="metric-value">40 <span class="metric-unit">kVAr</span></div>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="icon-box bg-purple-500/10 text-purple-400"><i class="fa-solid fa-bolt text-xl"></i></div>
+          <div class="metric-content">
+            <div class="metric-label">Apparent Power</div>
+            <div class="metric-value">1,625 <span class="metric-unit">kVA</span></div>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="icon-box bg-amber-500/10 text-amber-400"><i class="fa-solid fa-wave-square text-xl"></i></div>
+          <div class="metric-content">
+            <div class="metric-label">Power Factor</div>
+            <div class="metric-value">0.999</div>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="icon-box bg-cyan-500/10 text-cyan-400"><i class="fa-solid fa-wave-square text-xl"></i></div>
+          <div class="metric-content">
+            <div class="metric-label">Frequency</div>
+            <div class="metric-value">50.01 <span class="metric-unit">Hz</span></div>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="icon-box bg-emerald-500/10 text-emerald-400"><i class="fa-solid fa-toggle-on text-xl"></i></div>
+          <div class="metric-content">
+            <div class="metric-label">GCB Status</div>
+            <div class="metric-value text-emerald-400">Closed</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase Voltages & Currents -->
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div class="metric-card">
+          <div class="icon-box bg-yellow-500/10 text-yellow-400"><i class="fa-solid fa-plug text-xl"></i></div>
+          <div class="metric-content">
+            <div class="metric-label">Voltage L1-N</div>
+            <div class="metric-value">6,351 <span class="metric-unit">V</span></div>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="icon-box bg-yellow-500/10 text-yellow-400"><i class="fa-solid fa-plug text-xl"></i></div>
+          <div class="metric-content">
+            <div class="metric-label">Voltage L2-N</div>
+            <div class="metric-value">6,348 <span class="metric-unit">V</span></div>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="icon-box bg-yellow-500/10 text-yellow-400"><i class="fa-solid fa-plug text-xl"></i></div>
+          <div class="metric-content">
+            <div class="metric-label">Voltage L3-N</div>
+            <div class="metric-value">6,355 <span class="metric-unit">V</span></div>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="icon-box bg-orange-500/10 text-orange-400"><i class="fa-solid fa-arrows-left-right text-xl"></i></div>
+          <div class="metric-content">
+            <div class="metric-label">Current L1</div>
+            <div class="metric-value">85.2 <span class="metric-unit">A</span></div>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="icon-box bg-orange-500/10 text-orange-400"><i class="fa-solid fa-arrows-left-right text-xl"></i></div>
+          <div class="metric-content">
+            <div class="metric-label">Current L2</div>
+            <div class="metric-value">85.0 <span class="metric-unit">A</span></div>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="icon-box bg-orange-500/10 text-orange-400"><i class="fa-solid fa-arrows-left-right text-xl"></i></div>
+          <div class="metric-content">
+            <div class="metric-label">Current L3</div>
+            <div class="metric-value">85.4 <span class="metric-unit">A</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom: Sidebar Cards Row -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+        <!-- Run State -->
+        <div class="setpoint-card">
+          <div class="flex items-center gap-3">
+            <div class="icon-box bg-emerald-500/10 text-emerald-400 h-9 w-9"><i class="fa-solid fa-play text-lg"></i></div>
+            <span class="text-sm text-slate-400 font-medium">Run State</span>
+          </div>
+          <div class="text-xl font-bold text-emerald-400 mt-2">Running</div>
+          <div class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-clock mr-1"></i>1,110 operating hours</div>
+        </div>
+
+        <!-- Operating Mode -->
+        <div class="setpoint-card">
+          <div class="flex items-center gap-3">
+            <div class="icon-box bg-blue-500/10 text-blue-400 h-9 w-9"><i class="fa-solid fa-sliders text-lg"></i></div>
+            <span class="text-sm text-slate-400 font-medium">Operating Mode</span>
+          </div>
+          <div class="text-xl font-bold text-blue-400 mt-2">Automatic</div>
+          <div class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-layer-group mr-1"></i>Priority 4 of 5</div>
+        </div>
+
+        <!-- Local Operator Panel Status -->
+        <div class="setpoint-card">
+          <div class="flex items-center gap-3">
+            <div class="icon-box bg-slate-700/50 text-slate-300 h-9 w-9"><i class="fa-solid fa-gamepad text-lg"></i></div>
+            <span class="text-sm text-slate-400 font-medium">Local Operator Panel</span>
+          </div>
+          <div class="flex gap-3 mt-2 text-xs">
+            <div><span class="text-slate-500">Op:</span> <span class="text-blue-400 font-semibold">Off</span></div>
+            <div><span class="text-slate-500">Req:</span> <span class="text-blue-400 font-semibold">Off</span></div>
+            <div><span class="text-slate-500">Synch:</span> <span class="text-blue-400 font-semibold">Off</span></div>
+          </div>
+        </div>
+
+        <!-- Load -->
+        <div class="setpoint-card">
+          <div class="flex items-center gap-3">
+            <div class="icon-box bg-emerald-500/10 text-emerald-400 h-9 w-9"><i class="fa-solid fa-gauge-high text-lg"></i></div>
+            <span class="text-sm text-slate-400 font-medium">Load</span>
+          </div>
+          <div class="flex items-end justify-between mt-2">
+            <span class="text-xl font-bold text-white">1,624 <span class="text-sm text-slate-500 font-medium">kW</span></span>
+            <span class="text-lg font-semibold text-emerald-400">49.1%</span>
+          </div>
+          <div class="w-full bg-slate-800 rounded-full h-2 mt-2">
+            <div class="bg-emerald-500 h-2 rounded-full" style="width: 49.1%"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    </div><!-- end tab-overview -->
+
+    <!-- Tab: Engine Diagnostics -->
+    <div id="tab-engine" class="tab-panel" style="display:none;">
+      <div class="flex flex-col gap-4">
+
+        <!-- Engine Speed -->
+        <div class="grid grid-cols-1 gap-3">
+          <div class="metric-card" style="max-width:16rem;">
+            <div class="icon-box bg-blue-500/10 text-blue-400"><i class="fa-solid fa-gauge text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Engine Speed</div>
+              <div class="metric-value">1,505 <span class="metric-unit">rpm</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Pressures -->
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-2">Pressures</div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div class="metric-card">
+            <div class="icon-box bg-blue-500/10 text-blue-400"><i class="fa-solid fa-cloud text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Fuel Gas Pressure</div>
+              <div class="metric-value">107.46 <span class="metric-unit">psi</span></div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="icon-box bg-amber-500/10 text-amber-400"><i class="fa-solid fa-oil-can text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Engine Oil Pressure</div>
+              <div class="metric-value">59.25 <span class="metric-unit">psi</span></div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="icon-box bg-red-500/10 text-red-400"><i class="fa-solid fa-wind text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Exhaust Pressure</div>
+              <div class="metric-value">2.14 <span class="metric-unit">psi</span></div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="icon-box bg-cyan-500/10 text-cyan-400"><i class="fa-solid fa-droplet text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Cooling Water Pressure</div>
+              <div class="metric-value">37.43 <span class="metric-unit">psi</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Temperatures -->
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-2">Temperatures</div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div class="metric-card">
+            <div class="icon-box bg-blue-500/10 text-blue-400"><i class="fa-solid fa-temperature-half text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Fuel Gas Temperature</div>
+              <div class="metric-value">38.2 <span class="metric-unit">°C</span></div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="icon-box bg-amber-500/10 text-amber-400"><i class="fa-solid fa-temperature-half text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Engine Oil Temperature</div>
+              <div class="metric-value" style="color:#fbbf24;">66.7 <span class="metric-unit">°C</span></div>
+            </div>
+          </div>
+          <div class="metric-card" style="border-color:#ef4444;">
+            <div class="icon-box bg-red-500/10 text-red-400"><i class="fa-solid fa-temperature-half text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Exhaust Temperature</div>
+              <div class="metric-value" style="color:#ef4444;">498 <span class="metric-unit">°C</span></div>
+            </div>
+          </div>
+          <div class="metric-card" style="border-color:#ef4444;">
+            <div class="icon-box bg-red-500/10 text-red-400"><i class="fa-solid fa-temperature-half text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Turbo Temperature</div>
+              <div class="metric-value" style="color:#ef4444;">498 <span class="metric-unit">°C</span></div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="icon-box bg-orange-500/10 text-orange-400"><i class="fa-solid fa-temperature-half text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">SCR Inlet Temperature</div>
+              <div class="metric-value" style="color:#fbbf24;">436 <span class="metric-unit">°C</span></div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="icon-box bg-cyan-500/10 text-cyan-400"><i class="fa-solid fa-temperature-half text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Cooling Water Temp</div>
+              <div class="metric-value">74.0 <span class="metric-unit">°C</span></div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="icon-box bg-cyan-500/10 text-cyan-400"><i class="fa-solid fa-temperature-half text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Return Water Temp</div>
+              <div class="metric-value">64.9 <span class="metric-unit">°C</span></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Tab: Control / Modes -->
+    <div id="tab-control" class="tab-panel" style="display:none;">
+      <div class="flex flex-col lg:flex-row gap-6">
+
+        <!-- Left: Mode & Authority -->
+        <div class="flex-grow flex flex-col gap-4">
+
+          <!-- Section: Mode & Authority -->
+          <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Mode &amp; Authority</div>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <div class="metric-card">
+              <div class="icon-box bg-blue-500/10 text-blue-400"><i class="fa-solid fa-toggle-off text-xl"></i></div>
+              <div class="metric-content">
+                <div class="metric-label">Operation Selection</div>
+                <div class="metric-value text-blue-400">Off</div>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="icon-box bg-blue-500/10 text-blue-400"><i class="fa-solid fa-toggle-off text-xl"></i></div>
+              <div class="metric-content">
+                <div class="metric-label">Request Selection</div>
+                <div class="metric-value text-blue-400">Off</div>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="icon-box bg-blue-500/10 text-blue-400"><i class="fa-solid fa-toggle-off text-xl"></i></div>
+              <div class="metric-content">
+                <div class="metric-label">Synch Selection</div>
+                <div class="metric-value text-blue-400">Off</div>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="icon-box bg-emerald-500/10 text-emerald-400"><i class="fa-solid fa-tower-broadcast text-xl"></i></div>
+              <div class="metric-content">
+                <div class="metric-label">Control Context</div>
+                <div class="metric-value text-emerald-400">Remote</div>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="icon-box bg-emerald-500/10 text-emerald-400"><i class="fa-solid fa-robot text-xl"></i></div>
+              <div class="metric-content">
+                <div class="metric-label">Block / Auto / Manual</div>
+                <div class="metric-value text-emerald-400">Automatic</div>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="icon-box bg-slate-700/50 text-slate-300"><i class="fa-solid fa-layer-group text-xl"></i></div>
+              <div class="metric-content">
+                <div class="metric-label">Priority Level</div>
+                <div class="metric-value">4 <span class="metric-unit">of 5</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section: Enable Context -->
+          <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-2">Enable Context</div>
+          <div class="grid grid-cols-3 gap-3">
+            <div class="metric-card">
+              <div class="icon-box bg-emerald-500/10 text-emerald-400"><i class="fa-solid fa-circle-check text-xl"></i></div>
+              <div class="metric-content">
+                <div class="metric-label">Start Enable</div>
+                <div class="metric-value text-emerald-400">Enabled</div>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="icon-box bg-emerald-500/10 text-emerald-400"><i class="fa-solid fa-circle-check text-xl"></i></div>
+              <div class="metric-content">
+                <div class="metric-label">Stop Enable</div>
+                <div class="metric-value text-emerald-400">Enabled</div>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="icon-box bg-emerald-500/10 text-emerald-400"><i class="fa-solid fa-circle-check text-xl"></i></div>
+              <div class="metric-content">
+                <div class="metric-label">GCB Close Enable</div>
+                <div class="metric-value text-emerald-400">Enabled</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mode Status Notes -->
+          <div class="bg-[#0f172a] border border-slate-800 rounded-lg p-4 mt-2">
+            <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Mode Status Notes</div>
+            <ul class="text-sm text-slate-400 space-y-1.5 list-disc list-inside">
+              <li>Control room commands available in Remote + Automatic mode</li>
+              <li>Synchronisation available via automatic synch check</li>
+              <li>Local operator panel switches in Off position</li>
+              <li>Genset priority is 4 (dispatched after units 1&ndash;3)</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Right: Local Operator Panel -->
+        <div class="lg:w-[22rem] flex-shrink-0">
+          <div class="operator-panel" style="min-height:280px;">
+            <div class="panel-header">
+              <div>Genset Local Operator Panel</div>
+              <div class="px-2 py-0.5 bg-[#0f172a] text-emerald-400 text-xs font-bold rounded-full border border-slate-600 flex items-center gap-1.5 shadow-sm"><div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse drop-shadow-[0_0_2px_rgba(16,185,129,0.8)]"></div>G5</div>
+            </div>
+            <div class="panel-content">
+              <div class="control-column">
+                <div class="column-header text-gray-500">Operation</div>
+                <div class="flex flex-col border-t border-gray-400 flex-grow">
+                  <button class="btn-v3 active-blue">Off</button>
+                  <button class="btn-v3">Man</button>
+                  <button class="btn-v3">Aut</button>
+                </div>
+                <div class="lock-icon-container relative"><div class="relative"><i class="fa-solid fa-wifi radio-wave"></i><i class="fa-solid fa-lock lock-icon"></i></div></div>
+              </div>
+              <div class="middle-controls" style="margin-left: 16px; margin-top: -24px;">
+                <div class="connector connector-left"></div>
+                <button class="btn-action">Start</button>
+                <button class="btn-action">Stop</button>
+              </div>
+              <div class="control-column">
+                <div class="column-header text-gray-500">Request</div>
+                <div class="flex flex-col border-t border-gray-400 flex-grow">
+                  <button class="btn-v3 active-blue">Off</button>
+                  <button class="btn-v3">On</button>
+                  <button class="btn-v3">Remote</button>
+                </div>
+                <div class="lock-icon-container relative"><div class="relative"><i class="fa-solid fa-wifi radio-wave"></i><i class="fa-solid fa-lock lock-icon"></i></div></div>
+              </div>
+              <div class="control-column">
+                <div class="column-header text-gray-500">Synch</div>
+                <div class="flex flex-col border-t border-gray-400 flex-grow">
+                  <button class="btn-v3 active-blue">Off</button>
+                  <button class="btn-v3">Man</button>
+                  <button class="btn-v3">Aut</button>
+                </div>
+                <div class="lock-icon-container relative"><div class="relative"><i class="fa-solid fa-wifi radio-wave"></i><i class="fa-solid fa-lock lock-icon"></i></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Tab: Alarms / Alerts -->
+    <div id="tab-alarms" class="tab-panel" style="display:none;">
+      <div class="flex flex-col gap-4">
+
+        <!-- Summary Badges -->
+        <div class="flex gap-4">
+          <div class="px-4 py-2 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-2">
+            <i class="fa-solid fa-triangle-exclamation text-red-400"></i>
+            <span class="text-sm font-semibold text-red-400">2 Active Alarms</span>
+          </div>
+          <div class="px-4 py-2 bg-amber-500/10 border border-amber-500/30 rounded-lg flex items-center gap-2">
+            <i class="fa-solid fa-circle-exclamation text-amber-400"></i>
+            <span class="text-sm font-semibold text-amber-400">3 Active Alerts</span>
+          </div>
+        </div>
+
+        <!-- Active Alarms Table -->
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-2">Active Alarms</div>
+        <div class="bg-[#0f172a] border border-slate-800 rounded-lg overflow-hidden">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-slate-800 text-left">
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Alarm</th>
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Value</th>
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Limit</th>
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Timestamp</th>
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+                <td class="px-4 py-2.5 text-red-400 font-medium"><i class="fa-solid fa-circle-exclamation mr-1.5"></i>High Exhaust Temperature</td>
+                <td class="px-4 py-2.5 text-white font-semibold">498 °C</td>
+                <td class="px-4 py-2.5 text-slate-400">490 °C</td>
+                <td class="px-4 py-2.5 text-slate-500 font-mono text-xs">2026-03-30 14:22:08</td>
+                <td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-red-500/15 text-red-400 text-xs font-semibold rounded-full">Unacknowledged</span></td>
+              </tr>
+              <tr class="hover:bg-slate-800/30">
+                <td class="px-4 py-2.5 text-red-400 font-medium"><i class="fa-solid fa-circle-exclamation mr-1.5"></i>High Turbo Temperature</td>
+                <td class="px-4 py-2.5 text-white font-semibold">498 °C</td>
+                <td class="px-4 py-2.5 text-slate-400">495 °C</td>
+                <td class="px-4 py-2.5 text-slate-500 font-mono text-xs">2026-03-30 14:22:11</td>
+                <td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-red-500/15 text-red-400 text-xs font-semibold rounded-full">Unacknowledged</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Active Alerts Table -->
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-2">Active Alerts</div>
+        <div class="bg-[#0f172a] border border-slate-800 rounded-lg overflow-hidden">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-slate-800 text-left">
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Alert</th>
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Value</th>
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Limit</th>
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+                <td class="px-4 py-2.5 text-amber-400 font-medium"><i class="fa-solid fa-triangle-exclamation mr-1.5"></i>Oil Temperature Elevated</td>
+                <td class="px-4 py-2.5 text-white font-semibold">66.7 °C</td>
+                <td class="px-4 py-2.5 text-slate-400">70 °C</td>
+                <td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-slate-700/50 text-slate-300 text-xs font-semibold rounded-full">Acknowledged</span></td>
+              </tr>
+              <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+                <td class="px-4 py-2.5 text-amber-400 font-medium"><i class="fa-solid fa-triangle-exclamation mr-1.5"></i>SCR Inlet Temperature High</td>
+                <td class="px-4 py-2.5 text-white font-semibold">436 °C</td>
+                <td class="px-4 py-2.5 text-slate-400">450 °C</td>
+                <td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-slate-700/50 text-slate-300 text-xs font-semibold rounded-full">Acknowledged</span></td>
+              </tr>
+              <tr class="hover:bg-slate-800/30">
+                <td class="px-4 py-2.5 text-amber-400 font-medium"><i class="fa-solid fa-triangle-exclamation mr-1.5"></i>Urea Level Low</td>
+                <td class="px-4 py-2.5 text-white font-semibold">77 %</td>
+                <td class="px-4 py-2.5 text-slate-400">&lt;50 %</td>
+                <td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-slate-700/50 text-slate-300 text-xs font-semibold rounded-full">Acknowledged</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Abnormal Condition Summary -->
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-2">Abnormal Condition Summary</div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div class="bg-[#0f172a] border border-red-500/30 rounded-lg p-4">
+            <div class="flex items-center gap-2 text-red-400 text-sm font-semibold mb-1">
+              <i class="fa-solid fa-fire"></i> Thermal — Exhaust Path
+            </div>
+            <div class="text-xs text-slate-500">Exhaust and turbo temperatures exceed limits. Monitor closely.</div>
+          </div>
+          <div class="bg-[#0f172a] border border-amber-500/30 rounded-lg p-4">
+            <div class="flex items-center gap-2 text-amber-400 text-sm font-semibold mb-1">
+              <i class="fa-solid fa-oil-can"></i> Thermal — Lubrication
+            </div>
+            <div class="text-xs text-slate-500">Oil temperature approaching upper warning threshold.</div>
+          </div>
+          <div class="bg-[#0f172a] border border-amber-500/30 rounded-lg p-4">
+            <div class="flex items-center gap-2 text-amber-400 text-sm font-semibold mb-1">
+              <i class="fa-solid fa-flask"></i> Emissions — SCR System
+            </div>
+            <div class="text-xs text-slate-500">SCR inlet temperature elevated, urea level low.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Tab: Tag Data -->
+    <div id="tab-tagdata" class="tab-panel tab-scroll" style="display:none;">
+      <div class="bg-[#0f172a] border border-slate-800 rounded-lg overflow-hidden">
+        <table class="w-full text-sm">
+          <thead class="sticky top-0 bg-[#0f172a] z-10">
+            <tr class="border-b border-slate-800 text-left">
+              <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Tag Name</th>
+              <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Description</th>
+              <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold text-right">Value</th>
+              <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Unit</th>
+              <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Quality</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Electrical -->
+            <tr class="border-b border-slate-800/30"><td colspan="5" class="px-4 py-1.5 text-xs font-bold text-emerald-400/70 uppercase tracking-wider bg-slate-900/50">Electrical</td></tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-emerald-400">G5.P_ACT</td>
+              <td class="px-4 py-2 text-slate-300">Real Power</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">1624</td>
+              <td class="px-4 py-2 text-slate-500">kW</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-emerald-400">G5.Q_REACT</td>
+              <td class="px-4 py-2 text-slate-300">Reactive Power</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">40</td>
+              <td class="px-4 py-2 text-slate-500">kVAr</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-emerald-400">G5.S_APP</td>
+              <td class="px-4 py-2 text-slate-300">Apparent Power</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">1625</td>
+              <td class="px-4 py-2 text-slate-500">kVA</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-emerald-400">G5.PF</td>
+              <td class="px-4 py-2 text-slate-300">Power Factor</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">0.999</td>
+              <td class="px-4 py-2 text-slate-500"></td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-emerald-400">G5.FREQ</td>
+              <td class="px-4 py-2 text-slate-300">Frequency</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">50.01</td>
+              <td class="px-4 py-2 text-slate-500">Hz</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-emerald-400">G5.V_L1N</td>
+              <td class="px-4 py-2 text-slate-300">Voltage L1-N</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">6351</td>
+              <td class="px-4 py-2 text-slate-500">V</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-emerald-400">G5.V_L2N</td>
+              <td class="px-4 py-2 text-slate-300">Voltage L2-N</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">6348</td>
+              <td class="px-4 py-2 text-slate-500">V</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-emerald-400">G5.V_L3N</td>
+              <td class="px-4 py-2 text-slate-300">Voltage L3-N</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">6355</td>
+              <td class="px-4 py-2 text-slate-500">V</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-emerald-400">G5.I_L1</td>
+              <td class="px-4 py-2 text-slate-300">Current L1</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">85.2</td>
+              <td class="px-4 py-2 text-slate-500">A</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-emerald-400">G5.I_L2</td>
+              <td class="px-4 py-2 text-slate-300">Current L2</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">85.0</td>
+              <td class="px-4 py-2 text-slate-500">A</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-emerald-400">G5.I_L3</td>
+              <td class="px-4 py-2 text-slate-300">Current L3</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">85.4</td>
+              <td class="px-4 py-2 text-slate-500">A</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-emerald-400">G5.GCB_ST</td>
+              <td class="px-4 py-2 text-slate-300">GCB Status</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">Closed</td>
+              <td class="px-4 py-2 text-slate-500"></td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+            </tr>
+
+            <!-- Engine / Pressure -->
+            <tr class="border-b border-slate-800/30"><td colspan="5" class="px-4 py-1.5 text-xs font-bold text-blue-400/70 uppercase tracking-wider bg-slate-900/50">Engine / Pressure</td></tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-blue-400">G5.SPD</td>
+              <td class="px-4 py-2 text-slate-300">Engine Speed</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">1505</td>
+              <td class="px-4 py-2 text-slate-500">rpm</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-blue-400">G5.P_FUEL</td>
+              <td class="px-4 py-2 text-slate-300">Fuel Gas Pressure</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">107.46</td>
+              <td class="px-4 py-2 text-slate-500">psi</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-blue-400">G5.P_OIL</td>
+              <td class="px-4 py-2 text-slate-300">Engine Oil Pressure</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">59.25</td>
+              <td class="px-4 py-2 text-slate-500">psi</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-blue-400">G5.P_EXH</td>
+              <td class="px-4 py-2 text-slate-300">Exhaust Pressure</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">2.14</td>
+              <td class="px-4 py-2 text-slate-500">psi</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-blue-400">G5.P_CW</td>
+              <td class="px-4 py-2 text-slate-300">Cooling Water Pressure</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">37.43</td>
+              <td class="px-4 py-2 text-slate-500">psi</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+            </tr>
+
+            <!-- Temperatures -->
+            <tr class="border-b border-slate-800/30"><td colspan="5" class="px-4 py-1.5 text-xs font-bold text-orange-400/70 uppercase tracking-wider bg-slate-900/50">Temperatures</td></tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-orange-400">G5.T_FUEL</td>
+              <td class="px-4 py-2 text-slate-300">Fuel Gas Temperature</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">38.2</td>
+              <td class="px-4 py-2 text-slate-500">°C</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-orange-400">G5.T_OIL</td>
+              <td class="px-4 py-2 text-slate-300">Engine Oil Temperature</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">66.7</td>
+              <td class="px-4 py-2 text-slate-500">°C</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-amber-500/15 text-amber-400 text-xs rounded-full">Warning</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-orange-400">G5.T_EXH</td>
+              <td class="px-4 py-2 text-slate-300">Exhaust Temperature</td>
+              <td class="px-4 py-2 text-right text-red-400 font-semibold">498</td>
+              <td class="px-4 py-2 text-slate-500">°C</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-red-500/15 text-red-400 text-xs rounded-full">Alarm</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-orange-400">G5.T_TURBO</td>
+              <td class="px-4 py-2 text-slate-300">Turbo Temperature</td>
+              <td class="px-4 py-2 text-right text-red-400 font-semibold">498</td>
+              <td class="px-4 py-2 text-slate-500">°C</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-red-500/15 text-red-400 text-xs rounded-full">Alarm</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-orange-400">G5.T_SCR</td>
+              <td class="px-4 py-2 text-slate-300">SCR Inlet Temperature</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">436</td>
+              <td class="px-4 py-2 text-slate-500">°C</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-amber-500/15 text-amber-400 text-xs rounded-full">Warning</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-orange-400">G5.T_CW</td>
+              <td class="px-4 py-2 text-slate-300">Cooling Water Temperature</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">74.0</td>
+              <td class="px-4 py-2 text-slate-500">°C</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-orange-400">G5.T_RET</td>
+              <td class="px-4 py-2 text-slate-300">Return Water Temperature</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">64.9</td>
+              <td class="px-4 py-2 text-slate-500">°C</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+            </tr>
+
+            <!-- Control / Mode -->
+            <tr class="border-b border-slate-800/30"><td colspan="5" class="px-4 py-1.5 text-xs font-bold text-cyan-400/70 uppercase tracking-wider bg-slate-900/50">Control / Mode</td></tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-cyan-400">G5.RUN_ST</td>
+              <td class="px-4 py-2 text-slate-300">Run State</td>
+              <td class="px-4 py-2 text-right text-emerald-400 font-semibold">Running</td>
+              <td class="px-4 py-2 text-slate-500"></td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-cyan-400">G5.OP_HRS</td>
+              <td class="px-4 py-2 text-slate-300">Operating Hours</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">1110</td>
+              <td class="px-4 py-2 text-slate-500">h</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-cyan-400">G5.OP_MODE</td>
+              <td class="px-4 py-2 text-slate-300">Operating Mode</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">Automatic</td>
+              <td class="px-4 py-2 text-slate-500"></td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-cyan-400">G5.OP_SEL</td>
+              <td class="px-4 py-2 text-slate-300">Operation Selection</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">Off</td>
+              <td class="px-4 py-2 text-slate-500"></td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-cyan-400">G5.REQ_SEL</td>
+              <td class="px-4 py-2 text-slate-300">Request Selection</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">Off</td>
+              <td class="px-4 py-2 text-slate-500"></td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-cyan-400">G5.SYN_SEL</td>
+              <td class="px-4 py-2 text-slate-300">Synch Selection</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">Off</td>
+              <td class="px-4 py-2 text-slate-500"></td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-cyan-400">G5.CTRL_CTX</td>
+              <td class="px-4 py-2 text-slate-300">Control Context</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">Remote</td>
+              <td class="px-4 py-2 text-slate-500"></td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-cyan-400">G5.BAM_ST</td>
+              <td class="px-4 py-2 text-slate-300">Block / Auto / Manual</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">Auto</td>
+              <td class="px-4 py-2 text-slate-500"></td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-cyan-400">G5.PRIORITY</td>
+              <td class="px-4 py-2 text-slate-300">Priority Level</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">4</td>
+              <td class="px-4 py-2 text-slate-500"></td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+            </tr>
+
+            <!-- Enable -->
+            <tr class="border-b border-slate-800/30"><td colspan="5" class="px-4 py-1.5 text-xs font-bold text-green-400/70 uppercase tracking-wider bg-slate-900/50">Enable</td></tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-green-400">G5.START_EN</td>
+              <td class="px-4 py-2 text-slate-300">Start Enable</td>
+              <td class="px-4 py-2 text-right text-emerald-400 font-semibold">True</td>
+              <td class="px-4 py-2 text-slate-500"></td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-green-400">G5.STOP_EN</td>
+              <td class="px-4 py-2 text-slate-300">Stop Enable</td>
+              <td class="px-4 py-2 text-right text-emerald-400 font-semibold">True</td>
+              <td class="px-4 py-2 text-slate-500"></td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-green-400">G5.GCB_CLS_EN</td>
+              <td class="px-4 py-2 text-slate-300">GCB Close Enable</td>
+              <td class="px-4 py-2 text-right text-emerald-400 font-semibold">True</td>
+              <td class="px-4 py-2 text-slate-500"></td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+            </tr>
+
+            <!-- Setpoints -->
+            <tr class="border-b border-slate-800/30"><td colspan="5" class="px-4 py-1.5 text-xs font-bold text-slate-400/70 uppercase tracking-wider bg-slate-900/50">Setpoints</td></tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-slate-400">G5.P_SP</td>
+              <td class="px-4 py-2 text-slate-300">Power Setpoint</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">1640</td>
+              <td class="px-4 py-2 text-slate-500">kW</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-slate-400">G5.Q_SP</td>
+              <td class="px-4 py-2 text-slate-300">Reactive Setpoint</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">8</td>
+              <td class="px-4 py-2 text-slate-500">kVAr</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-slate-400">G5.P_LOAD_PCT</td>
+              <td class="px-4 py-2 text-slate-300">Load Percentage</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">49.1</td>
+              <td class="px-4 py-2 text-slate-500">%</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+            </tr>
+
+            <!-- Emissions -->
+            <tr class="border-b border-slate-800/30"><td colspan="5" class="px-4 py-1.5 text-xs font-bold text-purple-400/70 uppercase tracking-wider bg-slate-900/50">Emissions</td></tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-purple-400">G5.NO_CLEAN</td>
+              <td class="px-4 py-2 text-slate-300">NO Clean</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">2.7</td>
+              <td class="px-4 py-2 text-slate-500">ppm</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-purple-400">G5.UREA_LVL</td>
+              <td class="px-4 py-2 text-slate-300">Urea Level</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">77</td>
+              <td class="px-4 py-2 text-slate-500">%</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-amber-500/15 text-amber-400 text-xs rounded-full">Warning</span></td>
+            </tr>
+
+            <!-- Summary -->
+            <tr class="border-b border-slate-800/30"><td colspan="5" class="px-4 py-1.5 text-xs font-bold text-red-400/70 uppercase tracking-wider bg-slate-900/50">Summary</td></tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-red-400">G5.ALM_ACT</td>
+              <td class="px-4 py-2 text-slate-300">Active Alarms</td>
+              <td class="px-4 py-2 text-right text-red-400 font-semibold">2</td>
+              <td class="px-4 py-2 text-slate-500"></td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-red-500/15 text-red-400 text-xs rounded-full">Alarm</span></td>
+            </tr>
+            <tr class="hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-red-400">G5.ALT_ACT</td>
+              <td class="px-4 py-2 text-slate-300">Active Alerts</td>
+              <td class="px-4 py-2 text-right text-amber-400 font-semibold">3</td>
+              <td class="px-4 py-2 text-slate-500"></td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-amber-500/15 text-amber-400 text-xs rounded-full">Warning</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function switchTab(name, btn) {
+      // Hide all panels
+      document.querySelectorAll('.tab-panel').forEach(function(p) {
+        p.style.display = 'none';
+      });
+      // Deactivate all buttons
+      document.querySelectorAll('.tab-btn').forEach(function(b) {
+        b.classList.remove('active');
+      });
+      // Show selected panel
+      var panel = document.getElementById('tab-' + name);
+      if (name === 'overview') {
+        panel.style.display = 'flex';
+      } else {
+        panel.style.display = 'block';
+      }
+      // Activate button
+      btn.classList.add('active');
+    }
+  </script>
+</body>
+</html>
