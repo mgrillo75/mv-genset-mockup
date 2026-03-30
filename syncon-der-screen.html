@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sync Condenser Panel — SC1</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            slate: {
+              750: '#293548',
+              800: '#1e293b',
+              850: '#151f32',
+              900: '#0f172a',
+              950: '#050b14',
+            },
+            emerald: {
+              400: '#34d399',
+              500: '#10b981',
+            },
+            amber: {
+              400: '#fbbf24',
+              500: '#f59e0b',
+            },
+            blue: {
+              400: '#60a5fa',
+              500: '#3b82f6',
+              600: '#2563eb',
+            },
+            gray: {
+              50: '#f9fafb',
+              100: '#f3f4f6',
+              200: '#e5e7eb',
+              300: '#d1d5db',
+              400: '#9ca3af',
+              500: '#6b7280',
+              600: '#4b5563',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #050b14;
+      color: #f8fafc;
+      font-family: system-ui, -apple-system, sans-serif;
+      background-image: radial-gradient(circle at 50% 0%, #0f172a 0%, #050b14 70%);
+      background-attachment: fixed;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    /* Sync Condenser circle symbol */
+    .sc-circle {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
+      border: 2px solid #10b981;
+      box-shadow: 0 0 25px rgba(16, 185, 129, 0.2);
+      color: #10b981;
+    }
+
+    /* Dense Metric Cards */
+    .metric-card {
+      background-color: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 0.5rem;
+      padding: 0.875rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      transition: border-color 0.2s;
+    }
+    .metric-card:hover {
+      border-color: #334155;
+    }
+
+    .icon-box {
+      width: 2.75rem;
+      height: 2.75rem;
+      border-radius: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .metric-content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-width: 0;
+    }
+
+    .metric-label {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 0.125rem;
+    }
+
+    .metric-value {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #f8fafc;
+      display: flex;
+      align-items: baseline;
+      gap: 0.25rem;
+      line-height: 1.2;
+    }
+
+    .metric-unit {
+      font-size: 0.75rem;
+      color: #64748b;
+      font-weight: 400;
+    }
+
+    /* Buttons */
+    .btn-control {
+      background-color: #1e293b;
+      color: #cbd5e1;
+      border: 1px solid #334155;
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      width: 100%;
+    }
+    .btn-control:hover {
+      background-color: #334155;
+      color: white;
+    }
+    .btn-primary {
+      background-color: #10b981;
+      color: #022c22;
+      border: 1px solid #059669;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+    }
+    .btn-primary:hover {
+      background-color: #059669;
+      color: white;
+    }
+
+    /* Setpoint Cards */
+    .setpoint-card {
+      background-color: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 0.5rem;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      flex: 1;
+    }
+
+    /* Tab Bar */
+    .tab-bar {
+      display: flex;
+      gap: 0;
+      background-color: #0f172a;
+      border-bottom: 1px solid #1e293b;
+      padding: 0 0.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .tab-btn {
+      padding: 0.75rem 1.25rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #94a3b8;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      font-family: inherit;
+      margin-bottom: -1px;
+    }
+    .tab-btn:hover {
+      color: #cbd5e1;
+    }
+    .tab-btn.active {
+      color: #34d399;
+      border-bottom-color: #34d399;
+    }
+
+    /* Base card for every tab */
+    .tab-panel {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(15, 23, 42, 0.3) 100%);
+      border: 1px solid rgba(30, 41, 59, 0.8);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.03);
+      height: 680px;
+      overflow: hidden;
+    }
+
+    /* Scrollable tabs */
+    .tab-panel.tab-scroll {
+      overflow-y: auto;
+    }
+
+    /* Package device tile */
+    .device-tile {
+      background-color: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 0.5rem;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      transition: border-color 0.2s;
+    }
+    .device-tile:hover {
+      border-color: #334155;
+    }
+  </style>
+</head>
+<body class="min-h-screen p-4 md:p-6 lg:p-8 flex justify-center items-center w-full">
+  <div class="max-w-[90rem] w-full flex flex-col gap-0 justify-center">
+
+    <!-- Tab Bar -->
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('overview', this)">Overview</button>
+      <button class="tab-btn" onclick="switchTab('electrical', this)">Electrical</button>
+      <button class="tab-btn" onclick="switchTab('package', this)">Package</button>
+      <button class="tab-btn" onclick="switchTab('alarms', this)">Alarms / Alerts</button>
+      <button class="tab-btn" onclick="switchTab('tagdata', this)">Tag Data</button>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- Tab: Overview                                                 -->
+    <!-- ============================================================ -->
+    <div id="tab-overview" class="tab-panel flex flex-col lg:flex-row gap-6" style="display:flex;">
+
+      <!-- Left Column: Asset Visualization (Compact Sidebar) -->
+      <div class="lg:w-72 flex-shrink-0 flex flex-col gap-6">
+        <div class="bg-[#0f172a] border border-slate-800 rounded-lg p-5 flex flex-col items-center h-full">
+          <!-- Vertical electrical symbol — simplified sync condenser -->
+          <div class="w-1 h-8 bg-slate-600"></div>
+          <div class="flex items-center justify-center text-emerald-500 drop-shadow-[0_0_8px_rgba(16,185,129,0.5)] my-1">
+            <svg width="48" height="60" viewBox="0 0 32 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- Bus bar connection top -->
+              <line x1="16" y1="0" x2="16" y2="6" stroke="currentColor" stroke-width="2" />
+              <!-- Breaker symbol -->
+              <circle cx="16" cy="9" r="3" stroke="currentColor" stroke-width="2" />
+              <!-- Connection to motor circle -->
+              <line x1="16" y1="12" x2="16" y2="16" stroke="currentColor" stroke-width="2" />
+              <!-- Motor / condenser circle -->
+              <circle cx="16" cy="24" r="8" stroke="currentColor" stroke-width="2" />
+              <!-- "SC" label inside circle -->
+              <text x="16" y="26" text-anchor="middle" fill="currentColor" font-size="7" font-weight="bold" font-family="sans-serif">SC</text>
+              <!-- Ground symbol -->
+              <line x1="16" y1="32" x2="16" y2="36" stroke="currentColor" stroke-width="2" />
+              <line x1="11" y1="36" x2="21" y2="36" stroke="currentColor" stroke-width="2" />
+              <line x1="13" y1="38" x2="19" y2="38" stroke="currentColor" stroke-width="1.5" />
+              <line x1="14.5" y1="40" x2="17.5" y2="40" stroke="currentColor" stroke-width="1" />
+            </svg>
+          </div>
+          <div class="w-1 h-8 bg-slate-600"></div>
+
+          <!-- Animated state circle -->
+          <div class="sc-circle my-3">
+            <span class="relative z-10 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="40" height="20" viewBox="0 0 40 20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M 4 10 Q 12 -2 20 10 T 36 10"></path>
+              </svg>
+            </span>
+          </div>
+
+          <!-- Asset label -->
+          <div class="mt-4 mb-6 px-4 py-1.5 bg-emerald-500/10 text-emerald-400 text-base font-bold rounded-full border border-emerald-500/20 flex items-center gap-2">
+            <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
+            SC1
+          </div>
+
+          <!-- Command stack -->
+          <div class="w-full flex flex-col gap-2 mt-auto">
+            <button class="btn-control btn-primary">Start</button>
+            <button class="btn-control">Stop</button>
+            <button class="btn-control">Mode</button>
+            <button class="btn-control">Alarm Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column -->
+      <div class="flex-grow flex flex-col gap-4">
+
+        <!-- Header Bar -->
+        <div class="flex items-center justify-between bg-[#0f172a] border border-slate-800 rounded-lg px-5 py-3">
+          <div class="flex items-center gap-4">
+            <span class="text-lg font-bold text-white">Sync Condenser &mdash; SC1</span>
+            <span class="px-3 py-1 bg-emerald-500/15 text-emerald-400 text-xs font-bold rounded-full border border-emerald-500/30 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Running
+            </span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button class="btn-control btn-primary" style="width:auto; padding:0.375rem 0.75rem; font-size:0.75rem;">Start</button>
+            <button class="btn-control" style="width:auto; padding:0.375rem 0.75rem; font-size:0.75rem;">Stop</button>
+            <button class="btn-control" style="width:auto; padding:0.375rem 0.75rem; font-size:0.75rem;">Alarm Ack</button>
+            <button class="btn-control" style="width:auto; padding:0.375rem 0.75rem; font-size:0.75rem;">Block</button>
+            <button class="btn-control" style="width:auto; padding:0.375rem 0.75rem; font-size:0.75rem;">Auto</button>
+            <button class="btn-control" style="width:auto; padding:0.375rem 0.75rem; font-size:0.75rem;">Manual</button>
+          </div>
+        </div>
+
+        <!-- Top Row: Power / Electrical metrics -->
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div class="metric-card">
+            <div class="icon-box bg-emerald-500/10 text-emerald-400"><i class="fa-solid fa-bolt text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Real Power</div>
+              <div class="metric-value">12 <span class="metric-unit">kW</span></div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="icon-box bg-blue-500/10 text-blue-400"><i class="fa-solid fa-bolt text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Reactive Power</div>
+              <div class="metric-value">8,420 <span class="metric-unit">kVAr</span></div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="icon-box bg-purple-500/10 text-purple-400"><i class="fa-solid fa-bolt text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Apparent Power</div>
+              <div class="metric-value">8,421 <span class="metric-unit">kVA</span></div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="icon-box bg-amber-500/10 text-amber-400"><i class="fa-solid fa-wave-square text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Power Factor</div>
+              <div class="metric-value">0.001</div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="icon-box bg-cyan-500/10 text-cyan-400"><i class="fa-solid fa-wave-square text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Frequency</div>
+              <div class="metric-value">50.00 <span class="metric-unit">Hz</span></div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="icon-box bg-emerald-500/10 text-emerald-400"><i class="fa-solid fa-toggle-on text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Breaker Status</div>
+              <div class="metric-value text-emerald-400">Closed</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Second Row: Phase Voltages & Currents -->
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div class="metric-card">
+            <div class="icon-box bg-yellow-500/10 text-yellow-400"><i class="fa-solid fa-plug text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Voltage L1</div>
+              <div class="metric-value">11,002 <span class="metric-unit">V</span></div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="icon-box bg-yellow-500/10 text-yellow-400"><i class="fa-solid fa-plug text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Voltage L2</div>
+              <div class="metric-value">10,998 <span class="metric-unit">V</span></div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="icon-box bg-yellow-500/10 text-yellow-400"><i class="fa-solid fa-plug text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Voltage L3</div>
+              <div class="metric-value">11,005 <span class="metric-unit">V</span></div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="icon-box bg-orange-500/10 text-orange-400"><i class="fa-solid fa-arrows-left-right text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Current L1</div>
+              <div class="metric-value">442.1 <span class="metric-unit">A</span></div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="icon-box bg-orange-500/10 text-orange-400"><i class="fa-solid fa-arrows-left-right text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Current L2</div>
+              <div class="metric-value">441.8 <span class="metric-unit">A</span></div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="icon-box bg-orange-500/10 text-orange-400"><i class="fa-solid fa-arrows-left-right text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Current L3</div>
+              <div class="metric-value">442.4 <span class="metric-unit">A</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Row: Status Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+          <!-- Run State -->
+          <div class="setpoint-card">
+            <div class="flex items-center gap-3">
+              <div class="icon-box bg-emerald-500/10 text-emerald-400 h-9 w-9"><i class="fa-solid fa-play text-lg"></i></div>
+              <span class="text-sm text-slate-400 font-medium">Run State</span>
+            </div>
+            <div class="text-xl font-bold text-emerald-400 mt-2">Running</div>
+            <div class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-clock mr-1"></i>4,230 operating hours</div>
+          </div>
+          <!-- Operating Mode -->
+          <div class="setpoint-card">
+            <div class="flex items-center gap-3">
+              <div class="icon-box bg-blue-500/10 text-blue-400 h-9 w-9"><i class="fa-solid fa-sliders text-lg"></i></div>
+              <span class="text-sm text-slate-400 font-medium">Operating Mode</span>
+            </div>
+            <div class="text-xl font-bold text-blue-400 mt-2">Automatic</div>
+            <div class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-tower-broadcast mr-1"></i>Remote Control</div>
+          </div>
+          <!-- Control Authority -->
+          <div class="setpoint-card">
+            <div class="flex items-center gap-3">
+              <div class="icon-box bg-emerald-500/10 text-emerald-400 h-9 w-9"><i class="fa-solid fa-tower-broadcast text-lg"></i></div>
+              <span class="text-sm text-slate-400 font-medium">Control Authority</span>
+            </div>
+            <div class="text-xl font-bold text-emerald-400 mt-2">Remote</div>
+            <div class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-robot mr-1"></i>Auto mode active</div>
+          </div>
+          <!-- Reactive Contribution -->
+          <div class="setpoint-card">
+            <div class="flex items-center gap-3">
+              <div class="icon-box bg-blue-500/10 text-blue-400 h-9 w-9"><i class="fa-solid fa-gauge-high text-lg"></i></div>
+              <span class="text-sm text-slate-400 font-medium">Reactive Contribution</span>
+            </div>
+            <div class="flex items-end justify-between mt-2">
+              <span class="text-xl font-bold text-white">8,420 <span class="text-sm text-slate-500 font-medium">kVAr</span></span>
+              <span class="text-lg font-semibold text-blue-400">84.2%</span>
+            </div>
+            <div class="w-full bg-slate-800 rounded-full h-2 mt-2">
+              <div class="bg-blue-500 h-2 rounded-full" style="width: 84.2%"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- end tab-overview -->
+
+    <!-- ============================================================ -->
+    <!-- Tab: Electrical                                               -->
+    <!-- ============================================================ -->
+    <div id="tab-electrical" class="tab-panel tab-scroll" style="display:none;">
+      <div class="flex flex-col gap-4">
+
+        <!-- Section: Measurements -->
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Measurements</div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div class="metric-card">
+            <div class="icon-box bg-blue-500/10 text-blue-400"><i class="fa-solid fa-bolt text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Reactive Power</div>
+              <div class="metric-value">8,420 <span class="metric-unit">kVAr</span></div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="icon-box bg-emerald-500/10 text-emerald-400"><i class="fa-solid fa-bolt text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Real Power</div>
+              <div class="metric-value">12 <span class="metric-unit">kW</span></div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="icon-box bg-purple-500/10 text-purple-400"><i class="fa-solid fa-bolt text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Apparent Power</div>
+              <div class="metric-value">8,421 <span class="metric-unit">kVA</span></div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="icon-box bg-amber-500/10 text-amber-400"><i class="fa-solid fa-wave-square text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Power Factor</div>
+              <div class="metric-value">0.001</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div class="metric-card">
+            <div class="icon-box bg-cyan-500/10 text-cyan-400"><i class="fa-solid fa-wave-square text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Frequency</div>
+              <div class="metric-value">50.00 <span class="metric-unit">Hz</span></div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="icon-box bg-yellow-500/10 text-yellow-400"><i class="fa-solid fa-plug text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Bus Voltage</div>
+              <div class="metric-value">11,002 <span class="metric-unit">V</span></div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="icon-box bg-blue-500/10 text-blue-400"><i class="fa-solid fa-magnet text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Excitation Current</div>
+              <div class="metric-value">245 <span class="metric-unit">A</span></div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="icon-box bg-blue-500/10 text-blue-400"><i class="fa-solid fa-bolt text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Excitation Voltage</div>
+              <div class="metric-value">82.4 <span class="metric-unit">V</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Phase Voltages -->
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-2">Phase Voltages</div>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+          <div class="metric-card">
+            <div class="icon-box bg-yellow-500/10 text-yellow-400"><i class="fa-solid fa-plug text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Voltage L1</div>
+              <div class="metric-value">11,002 <span class="metric-unit">V</span></div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="icon-box bg-yellow-500/10 text-yellow-400"><i class="fa-solid fa-plug text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Voltage L2</div>
+              <div class="metric-value">10,998 <span class="metric-unit">V</span></div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="icon-box bg-yellow-500/10 text-yellow-400"><i class="fa-solid fa-plug text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Voltage L3</div>
+              <div class="metric-value">11,005 <span class="metric-unit">V</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Phase Currents -->
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-2">Phase Currents</div>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+          <div class="metric-card">
+            <div class="icon-box bg-orange-500/10 text-orange-400"><i class="fa-solid fa-arrows-left-right text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Current L1</div>
+              <div class="metric-value">442.1 <span class="metric-unit">A</span></div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="icon-box bg-orange-500/10 text-orange-400"><i class="fa-solid fa-arrows-left-right text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Current L2</div>
+              <div class="metric-value">441.8 <span class="metric-unit">A</span></div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="icon-box bg-orange-500/10 text-orange-400"><i class="fa-solid fa-arrows-left-right text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Current L3</div>
+              <div class="metric-value">442.4 <span class="metric-unit">A</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Connection / Breaker States -->
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-2">Connection / Breaker States</div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div class="metric-card">
+            <div class="icon-box bg-emerald-500/10 text-emerald-400"><i class="fa-solid fa-toggle-on text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Main Breaker</div>
+              <div class="metric-value text-emerald-400">Closed</div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="icon-box bg-emerald-500/10 text-emerald-400"><i class="fa-solid fa-toggle-on text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Field Breaker</div>
+              <div class="metric-value text-emerald-400">Closed</div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="icon-box bg-emerald-500/10 text-emerald-400"><i class="fa-solid fa-circle-check text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Sync Check</div>
+              <div class="metric-value text-emerald-400">OK</div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="icon-box bg-emerald-500/10 text-emerald-400"><i class="fa-solid fa-link text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Grid Connection</div>
+              <div class="metric-value text-emerald-400">Connected</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- Tab: Package                                                  -->
+    <!-- ============================================================ -->
+    <div id="tab-package" class="tab-panel tab-scroll" style="display:none;">
+      <div class="flex flex-col gap-4">
+
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Package Subsystems</div>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+
+          <!-- CCP -->
+          <div class="device-tile" style="border-color: rgba(16,185,129,0.3);">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-bold text-white">CCP</span>
+              <span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs font-semibold rounded-full">Healthy</span>
+            </div>
+            <div class="text-xs text-slate-500">Cooling Circulation Pump</div>
+            <div class="flex items-center gap-3 mt-1">
+              <div class="flex items-center gap-1.5"><i class="fa-solid fa-bell text-emerald-400 text-xs"></i><span class="text-xs text-slate-400">No Alarms</span></div>
+              <div class="flex items-center gap-1.5"><i class="fa-solid fa-wifi text-emerald-400 text-xs"></i><span class="text-xs text-slate-400">Online</span></div>
+            </div>
+          </div>
+
+          <!-- VFD -->
+          <div class="device-tile" style="border-color: rgba(16,185,129,0.3);">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-bold text-white">VFD</span>
+              <span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs font-semibold rounded-full">Healthy</span>
+            </div>
+            <div class="text-xs text-slate-500">Variable Frequency Drive</div>
+            <div class="flex items-center gap-3 mt-1">
+              <div class="flex items-center gap-1.5"><i class="fa-solid fa-bell text-emerald-400 text-xs"></i><span class="text-xs text-slate-400">No Alarms</span></div>
+              <div class="flex items-center gap-1.5"><i class="fa-solid fa-wifi text-emerald-400 text-xs"></i><span class="text-xs text-slate-400">Online</span></div>
+            </div>
+          </div>
+
+          <!-- UPS -->
+          <div class="device-tile" style="border-color: rgba(251,191,36,0.3);">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-bold text-white">UPS</span>
+              <span class="px-2 py-0.5 bg-amber-500/15 text-amber-400 text-xs font-semibold rounded-full">Warning</span>
+            </div>
+            <div class="text-xs text-slate-500">Uninterruptible Power Supply</div>
+            <div class="flex items-center gap-3 mt-1">
+              <div class="flex items-center gap-1.5"><i class="fa-solid fa-bell text-amber-400 text-xs"></i><span class="text-xs text-amber-400">Battery Low</span></div>
+              <div class="flex items-center gap-1.5"><i class="fa-solid fa-wifi text-emerald-400 text-xs"></i><span class="text-xs text-slate-400">Online</span></div>
+            </div>
+          </div>
+
+          <!-- AVR -->
+          <div class="device-tile" style="border-color: rgba(16,185,129,0.3);">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-bold text-white">AVR</span>
+              <span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs font-semibold rounded-full">Healthy</span>
+            </div>
+            <div class="text-xs text-slate-500">Automatic Voltage Regulator</div>
+            <div class="flex items-center gap-3 mt-1">
+              <div class="flex items-center gap-1.5"><i class="fa-solid fa-bell text-emerald-400 text-xs"></i><span class="text-xs text-slate-400">No Alarms</span></div>
+              <div class="flex items-center gap-1.5"><i class="fa-solid fa-wifi text-emerald-400 text-xs"></i><span class="text-xs text-slate-400">Online</span></div>
+            </div>
+          </div>
+
+          <!-- Lube Oil System -->
+          <div class="device-tile" style="border-color: rgba(16,185,129,0.3);">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-bold text-white">Lube Oil</span>
+              <span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs font-semibold rounded-full">Healthy</span>
+            </div>
+            <div class="text-xs text-slate-500">Lubrication Oil System</div>
+            <div class="flex items-center gap-3 mt-1">
+              <div class="flex items-center gap-1.5"><i class="fa-solid fa-bell text-emerald-400 text-xs"></i><span class="text-xs text-slate-400">No Alarms</span></div>
+              <div class="flex items-center gap-1.5"><i class="fa-solid fa-wifi text-emerald-400 text-xs"></i><span class="text-xs text-slate-400">Online</span></div>
+            </div>
+          </div>
+
+          <!-- Hydrogen System -->
+          <div class="device-tile" style="border-color: rgba(16,185,129,0.3);">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-bold text-white">H2 System</span>
+              <span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs font-semibold rounded-full">Healthy</span>
+            </div>
+            <div class="text-xs text-slate-500">Hydrogen Cooling System</div>
+            <div class="flex items-center gap-3 mt-1">
+              <div class="flex items-center gap-1.5"><i class="fa-solid fa-bell text-emerald-400 text-xs"></i><span class="text-xs text-slate-400">No Alarms</span></div>
+              <div class="flex items-center gap-1.5"><i class="fa-solid fa-wifi text-emerald-400 text-xs"></i><span class="text-xs text-slate-400">Online</span></div>
+            </div>
+          </div>
+
+          <!-- Seal Oil -->
+          <div class="device-tile" style="border-color: rgba(239,68,68,0.3);">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-bold text-white">Seal Oil</span>
+              <span class="px-2 py-0.5 bg-red-500/15 text-red-400 text-xs font-semibold rounded-full">Fault</span>
+            </div>
+            <div class="text-xs text-slate-500">Seal Oil System</div>
+            <div class="flex items-center gap-3 mt-1">
+              <div class="flex items-center gap-1.5"><i class="fa-solid fa-bell text-red-400 text-xs"></i><span class="text-xs text-red-400">Low Pressure</span></div>
+              <div class="flex items-center gap-1.5"><i class="fa-solid fa-wifi text-emerald-400 text-xs"></i><span class="text-xs text-slate-400">Online</span></div>
+            </div>
+          </div>
+
+          <!-- PLC / Controller -->
+          <div class="device-tile" style="border-color: rgba(16,185,129,0.3);">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-bold text-white">PLC</span>
+              <span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs font-semibold rounded-full">Healthy</span>
+            </div>
+            <div class="text-xs text-slate-500">Protection &amp; Control System</div>
+            <div class="flex items-center gap-3 mt-1">
+              <div class="flex items-center gap-1.5"><i class="fa-solid fa-bell text-emerald-400 text-xs"></i><span class="text-xs text-slate-400">No Alarms</span></div>
+              <div class="flex items-center gap-1.5"><i class="fa-solid fa-wifi text-emerald-400 text-xs"></i><span class="text-xs text-slate-400">Online</span></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- Tab: Alarms / Alerts                                          -->
+    <!-- ============================================================ -->
+    <div id="tab-alarms" class="tab-panel tab-scroll" style="display:none;">
+      <div class="flex flex-col gap-4">
+
+        <!-- Summary Bar -->
+        <div class="flex gap-4">
+          <div class="px-4 py-2 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-2">
+            <i class="fa-solid fa-circle-xmark text-red-400"></i>
+            <span class="text-sm font-semibold text-red-400">1 Active Trip</span>
+          </div>
+          <div class="px-4 py-2 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-2">
+            <i class="fa-solid fa-triangle-exclamation text-red-400"></i>
+            <span class="text-sm font-semibold text-red-400">1 Active Alarm</span>
+          </div>
+          <div class="px-4 py-2 bg-amber-500/10 border border-amber-500/30 rounded-lg flex items-center gap-2">
+            <i class="fa-solid fa-circle-exclamation text-amber-400"></i>
+            <span class="text-sm font-semibold text-amber-400">2 Active Warnings</span>
+          </div>
+        </div>
+
+        <!-- Trips -->
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-2">Trips</div>
+        <div class="bg-[#0f172a] border border-slate-800 rounded-lg overflow-hidden">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-slate-800 text-left">
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Alarm</th>
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Severity</th>
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Source</th>
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Timestamp</th>
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="hover:bg-slate-800/30">
+                <td class="px-4 py-2.5 text-red-400 font-medium"><i class="fa-solid fa-circle-xmark mr-1.5"></i>Seal Oil Pressure Trip</td>
+                <td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-red-500/15 text-red-400 text-xs font-semibold rounded-full">Critical</span></td>
+                <td class="px-4 py-2.5 text-slate-400">Seal Oil System</td>
+                <td class="px-4 py-2.5 text-slate-500 font-mono text-xs">2026-03-30 09:14:32</td>
+                <td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-red-500/15 text-red-400 text-xs font-semibold rounded-full">Active</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Blocking -->
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-2">Blocking</div>
+        <div class="bg-[#0f172a] border border-slate-800 rounded-lg overflow-hidden">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-slate-800 text-left">
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Alarm</th>
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Severity</th>
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Source</th>
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Timestamp</th>
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="hover:bg-slate-800/30">
+                <td class="px-4 py-2.5 text-slate-400 font-medium" colspan="5"><i class="fa-solid fa-circle-check mr-1.5 text-slate-600"></i>No active blocking conditions</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Warnings -->
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-2">Warnings</div>
+        <div class="bg-[#0f172a] border border-slate-800 rounded-lg overflow-hidden">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-slate-800 text-left">
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Alarm</th>
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Severity</th>
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Source</th>
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Timestamp</th>
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+                <td class="px-4 py-2.5 text-amber-400 font-medium"><i class="fa-solid fa-triangle-exclamation mr-1.5"></i>UPS Battery Low</td>
+                <td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-amber-500/15 text-amber-400 text-xs font-semibold rounded-full">Warning</span></td>
+                <td class="px-4 py-2.5 text-slate-400">UPS</td>
+                <td class="px-4 py-2.5 text-slate-500 font-mono text-xs">2026-03-30 08:05:17</td>
+                <td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-amber-500/15 text-amber-400 text-xs font-semibold rounded-full">Active</span></td>
+              </tr>
+              <tr class="hover:bg-slate-800/30">
+                <td class="px-4 py-2.5 text-amber-400 font-medium"><i class="fa-solid fa-triangle-exclamation mr-1.5"></i>Bearing Temperature Elevated</td>
+                <td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-amber-500/15 text-amber-400 text-xs font-semibold rounded-full">Warning</span></td>
+                <td class="px-4 py-2.5 text-slate-400">Machine</td>
+                <td class="px-4 py-2.5 text-slate-500 font-mono text-xs">2026-03-30 10:22:45</td>
+                <td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-slate-700/50 text-slate-300 text-xs font-semibold rounded-full">Acknowledged</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Comms -->
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-2">Comms</div>
+        <div class="bg-[#0f172a] border border-slate-800 rounded-lg overflow-hidden">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-slate-800 text-left">
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Alarm</th>
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Severity</th>
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Source</th>
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Timestamp</th>
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="hover:bg-slate-800/30">
+                <td class="px-4 py-2.5 text-slate-400 font-medium" colspan="5"><i class="fa-solid fa-circle-check mr-1.5 text-slate-600"></i>All communications normal</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- Tab: Tag Data                                                 -->
+    <!-- ============================================================ -->
+    <div id="tab-tagdata" class="tab-panel tab-scroll" style="display:none;">
+      <div class="bg-[#0f172a] border border-slate-800 rounded-lg overflow-hidden">
+        <table class="w-full text-sm">
+          <thead class="sticky top-0 bg-[#0f172a] z-10">
+            <tr class="border-b border-slate-800 text-left">
+              <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Tag Name</th>
+              <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold text-right">Value</th>
+              <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Units</th>
+              <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Status / Quality</th>
+              <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Source</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Electrical -->
+            <tr class="border-b border-slate-800/30"><td colspan="5" class="px-4 py-1.5 text-xs font-bold text-emerald-400/70 uppercase tracking-wider bg-slate-900/50">Electrical</td></tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-emerald-400">SC1.Q_REACT</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">8420</td>
+              <td class="px-4 py-2 text-slate-500">kVAr</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+              <td class="px-4 py-2 text-slate-500">AVR</td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-emerald-400">SC1.P_ACT</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">12</td>
+              <td class="px-4 py-2 text-slate-500">kW</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+              <td class="px-4 py-2 text-slate-500">PLC</td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-emerald-400">SC1.S_APP</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">8421</td>
+              <td class="px-4 py-2 text-slate-500">kVA</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+              <td class="px-4 py-2 text-slate-500">PLC</td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-emerald-400">SC1.PF</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">0.001</td>
+              <td class="px-4 py-2 text-slate-500"></td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+              <td class="px-4 py-2 text-slate-500">PLC</td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-emerald-400">SC1.FREQ</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">50.00</td>
+              <td class="px-4 py-2 text-slate-500">Hz</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+              <td class="px-4 py-2 text-slate-500">PLC</td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-emerald-400">SC1.V_L1</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">11002</td>
+              <td class="px-4 py-2 text-slate-500">V</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+              <td class="px-4 py-2 text-slate-500">PLC</td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-emerald-400">SC1.V_L2</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">10998</td>
+              <td class="px-4 py-2 text-slate-500">V</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+              <td class="px-4 py-2 text-slate-500">PLC</td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-emerald-400">SC1.V_L3</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">11005</td>
+              <td class="px-4 py-2 text-slate-500">V</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+              <td class="px-4 py-2 text-slate-500">PLC</td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-emerald-400">SC1.I_L1</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">442.1</td>
+              <td class="px-4 py-2 text-slate-500">A</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+              <td class="px-4 py-2 text-slate-500">PLC</td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-emerald-400">SC1.I_L2</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">441.8</td>
+              <td class="px-4 py-2 text-slate-500">A</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+              <td class="px-4 py-2 text-slate-500">PLC</td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-emerald-400">SC1.I_L3</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">442.4</td>
+              <td class="px-4 py-2 text-slate-500">A</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+              <td class="px-4 py-2 text-slate-500">PLC</td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-emerald-400">SC1.BRK_MAIN</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">Closed</td>
+              <td class="px-4 py-2 text-slate-500"></td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+              <td class="px-4 py-2 text-slate-500">PLC</td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-emerald-400">SC1.BRK_FIELD</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">Closed</td>
+              <td class="px-4 py-2 text-slate-500"></td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+              <td class="px-4 py-2 text-slate-500">PLC</td>
+            </tr>
+
+            <!-- Excitation -->
+            <tr class="border-b border-slate-800/30"><td colspan="5" class="px-4 py-1.5 text-xs font-bold text-blue-400/70 uppercase tracking-wider bg-slate-900/50">Excitation</td></tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-blue-400">SC1.EXC_I</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">245</td>
+              <td class="px-4 py-2 text-slate-500">A</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+              <td class="px-4 py-2 text-slate-500">AVR</td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-blue-400">SC1.EXC_V</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">82.4</td>
+              <td class="px-4 py-2 text-slate-500">V</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+              <td class="px-4 py-2 text-slate-500">AVR</td>
+            </tr>
+
+            <!-- Package / Auxiliary -->
+            <tr class="border-b border-slate-800/30"><td colspan="5" class="px-4 py-1.5 text-xs font-bold text-orange-400/70 uppercase tracking-wider bg-slate-900/50">Package / Auxiliary</td></tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-orange-400">SC1.T_BEARING</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">72.3</td>
+              <td class="px-4 py-2 text-slate-500">&deg;C</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-amber-500/15 text-amber-400 text-xs rounded-full">Warning</span></td>
+              <td class="px-4 py-2 text-slate-500">PLC</td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-orange-400">SC1.T_STATOR</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">85.1</td>
+              <td class="px-4 py-2 text-slate-500">&deg;C</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+              <td class="px-4 py-2 text-slate-500">PLC</td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-orange-400">SC1.P_SEAL_OIL</td>
+              <td class="px-4 py-2 text-right text-red-400 font-semibold">18.2</td>
+              <td class="px-4 py-2 text-slate-500">psi</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-red-500/15 text-red-400 text-xs rounded-full">Alarm</span></td>
+              <td class="px-4 py-2 text-slate-500">PLC</td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-orange-400">SC1.P_LUBE_OIL</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">42.7</td>
+              <td class="px-4 py-2 text-slate-500">psi</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+              <td class="px-4 py-2 text-slate-500">PLC</td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-orange-400">SC1.P_H2</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">45.0</td>
+              <td class="px-4 py-2 text-slate-500">psi</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+              <td class="px-4 py-2 text-slate-500">PLC</td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-orange-400">SC1.T_CW_IN</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">28.4</td>
+              <td class="px-4 py-2 text-slate-500">&deg;C</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+              <td class="px-4 py-2 text-slate-500">PLC</td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-orange-400">SC1.T_CW_OUT</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">36.1</td>
+              <td class="px-4 py-2 text-slate-500">&deg;C</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+              <td class="px-4 py-2 text-slate-500">PLC</td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-orange-400">SC1.UPS_BATT</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">72</td>
+              <td class="px-4 py-2 text-slate-500">%</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-amber-500/15 text-amber-400 text-xs rounded-full">Warning</span></td>
+              <td class="px-4 py-2 text-slate-500">UPS</td>
+            </tr>
+
+            <!-- Control / Mode -->
+            <tr class="border-b border-slate-800/30"><td colspan="5" class="px-4 py-1.5 text-xs font-bold text-cyan-400/70 uppercase tracking-wider bg-slate-900/50">Control / Mode</td></tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-cyan-400">SC1.RUN_ST</td>
+              <td class="px-4 py-2 text-right text-emerald-400 font-semibold">Running</td>
+              <td class="px-4 py-2 text-slate-500"></td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+              <td class="px-4 py-2 text-slate-500">PLC</td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-cyan-400">SC1.OP_HRS</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">4230</td>
+              <td class="px-4 py-2 text-slate-500">h</td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+              <td class="px-4 py-2 text-slate-500">PLC</td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-cyan-400">SC1.OP_MODE</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">Automatic</td>
+              <td class="px-4 py-2 text-slate-500"></td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+              <td class="px-4 py-2 text-slate-500">PLC</td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-cyan-400">SC1.CTRL_CTX</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">Remote</td>
+              <td class="px-4 py-2 text-slate-500"></td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+              <td class="px-4 py-2 text-slate-500">PLC</td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-cyan-400">SC1.BAM_ST</td>
+              <td class="px-4 py-2 text-right text-white font-semibold">Auto</td>
+              <td class="px-4 py-2 text-slate-500"></td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs rounded-full">Good</span></td>
+              <td class="px-4 py-2 text-slate-500">PLC</td>
+            </tr>
+
+            <!-- Summary -->
+            <tr class="border-b border-slate-800/30"><td colspan="5" class="px-4 py-1.5 text-xs font-bold text-red-400/70 uppercase tracking-wider bg-slate-900/50">Summary</td></tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-red-400">SC1.TRIP_ACT</td>
+              <td class="px-4 py-2 text-right text-red-400 font-semibold">1</td>
+              <td class="px-4 py-2 text-slate-500"></td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-red-500/15 text-red-400 text-xs rounded-full">Alarm</span></td>
+              <td class="px-4 py-2 text-slate-500">PLC</td>
+            </tr>
+            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-red-400">SC1.ALM_ACT</td>
+              <td class="px-4 py-2 text-right text-red-400 font-semibold">1</td>
+              <td class="px-4 py-2 text-slate-500"></td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-red-500/15 text-red-400 text-xs rounded-full">Alarm</span></td>
+              <td class="px-4 py-2 text-slate-500">PLC</td>
+            </tr>
+            <tr class="hover:bg-slate-800/30">
+              <td class="px-4 py-2 font-mono text-xs text-red-400">SC1.WRN_ACT</td>
+              <td class="px-4 py-2 text-right text-amber-400 font-semibold">2</td>
+              <td class="px-4 py-2 text-slate-500"></td>
+              <td class="px-4 py-2"><span class="px-2 py-0.5 bg-amber-500/15 text-amber-400 text-xs rounded-full">Warning</span></td>
+              <td class="px-4 py-2 text-slate-500">PLC</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function switchTab(name, btn) {
+      document.querySelectorAll('.tab-panel').forEach(function(p) {
+        p.style.display = 'none';
+      });
+      document.querySelectorAll('.tab-btn').forEach(function(b) {
+        b.classList.remove('active');
+      });
+      var panel = document.getElementById('tab-' + name);
+      if (name === 'overview') {
+        panel.style.display = 'flex';
+      } else {
+        panel.style.display = 'block';
+      }
+      btn.classList.add('active');
+    }
+  </script>
+</body>
+</html>

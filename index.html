@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Asset Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            slate: {
+              800: '#1e293b',
+              900: '#0f172a',
+              950: '#050b14',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #050b14;
+      color: #f8fafc;
+      font-family: system-ui, -apple-system, sans-serif;
+      background-image: radial-gradient(circle at 50% 0%, #0f172a 0%, #050b14 70%);
+      background-attachment: fixed;
+    }
+
+    .asset-card {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(15, 23, 42, 0.4) 100%);
+      border: 1px solid rgba(30, 41, 59, 0.8);
+      border-radius: 1rem;
+      padding: 2.5rem;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.03);
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+      cursor: pointer;
+    }
+
+    .asset-card:hover {
+      border-color: #334155;
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    .asset-card.genset:hover {
+      border-color: rgba(16, 185, 129, 0.4);
+      box-shadow: 0 12px 40px rgba(16, 185, 129, 0.1), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    .asset-card.syncon:hover {
+      border-color: rgba(59, 130, 246, 0.4);
+      box-shadow: 0 12px 40px rgba(59, 130, 246, 0.1), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    .asset-icon {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .asset-icon.genset {
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
+      border: 2px solid rgba(16, 185, 129, 0.4);
+      color: #10b981;
+    }
+
+    .asset-icon.syncon {
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+      border: 2px solid rgba(59, 130, 246, 0.4);
+      color: #3b82f6;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-8">
+
+  <div class="text-center mb-12">
+    <h1 class="text-3xl font-bold text-white mb-2">Asset Dashboard</h1>
+    <p class="text-slate-400 text-sm">Select an asset to view its control panel</p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl w-full">
+
+    <!-- MV Genset -->
+    <a href="modern-genset-panel-v3.html" class="asset-card genset">
+      <div class="asset-icon genset">
+        <svg xmlns="http://www.w3.org/2000/svg" width="50" height="26" viewBox="0 0 50 26" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M 5 13 Q 15 -2 25 13 T 45 13"></path>
+        </svg>
+      </div>
+      <div class="text-center">
+        <div class="text-xl font-bold text-white mb-1">MV Genset</div>
+        <div class="text-sm text-slate-400">G5 &mdash; Medium Voltage Generator Set</div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="px-3 py-1 bg-emerald-500/15 text-emerald-400 text-xs font-bold rounded-full border border-emerald-500/30 flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Running
+        </span>
+      </div>
+    </a>
+
+    <!-- Sync Condenser -->
+    <a href="syncon-der-screen.html" class="asset-card syncon">
+      <div class="asset-icon syncon">
+        <svg width="52" height="52" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="16" r="11" stroke="currentColor" stroke-width="2" />
+          <text x="16" y="19" text-anchor="middle" fill="currentColor" font-size="9" font-weight="bold" font-family="sans-serif">SC</text>
+        </svg>
+      </div>
+      <div class="text-center">
+        <div class="text-xl font-bold text-white mb-1">Sync Condenser</div>
+        <div class="text-sm text-slate-400">SC1 &mdash; Synchronous Condenser</div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="px-3 py-1 bg-emerald-500/15 text-emerald-400 text-xs font-bold rounded-full border border-emerald-500/30 flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Running
+        </span>
+      </div>
+    </a>
+
+  </div>
+
+</body>
+</html>
