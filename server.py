@@ -8,7 +8,10 @@ HOST = "0.0.0.0"
 class Handler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
         if self.path == "/" or self.path == "":
-            self.path = "/index.html"
+            self.send_response(302)
+            self.send_header("Location", "/index.html")
+            self.end_headers()
+            return
         return super().do_GET()
 
     def log_message(self, format, *args):
