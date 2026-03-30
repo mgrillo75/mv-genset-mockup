@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Backup Diesel Generator — EDG</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            slate: {
+              750: '#293548',
+              800: '#1e293b',
+              850: '#151f32',
+              900: '#0f172a',
+              950: '#050b14',
+            },
+            emerald: { 400: '#34d399', 500: '#10b981' },
+            amber:   { 400: '#fbbf24', 500: '#f59e0b' },
+            blue:    { 400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb' },
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #050b14;
+      color: #f8fafc;
+      font-family: system-ui, -apple-system, sans-serif;
+      background-image: radial-gradient(circle at 50% 0%, #0f172a 0%, #050b14 70%);
+      background-attachment: fixed;
+      margin: 0;
+    }
+
+    /* Metric Cards */
+    .metric-card {
+      background-color: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 0.5rem;
+      padding: 0.875rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      transition: border-color 0.2s;
+    }
+    .metric-card:hover { border-color: #334155; }
+
+    .icon-box {
+      width: 2.75rem;
+      height: 2.75rem;
+      border-radius: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .metric-content { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+    .metric-label   { font-size: 0.75rem; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 0.125rem; }
+    .metric-value   { font-size: 1.125rem; font-weight: 600; color: #f8fafc; display: flex; align-items: baseline; gap: 0.25rem; line-height: 1.2; }
+    .metric-unit    { font-size: 0.75rem; color: #64748b; font-weight: 400; }
+
+    /* Buttons */
+    .btn-control {
+      background-color: #1e293b;
+      color: #cbd5e1;
+      border: 1px solid #334155;
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      width: 100%;
+      cursor: pointer;
+    }
+    .btn-control:hover { background-color: #334155; color: white; }
+    .btn-primary {
+      background-color: #10b981;
+      color: #022c22;
+      border: 1px solid #059669;
+      box-shadow: 0 0 10px rgba(16,185,129,0.2);
+    }
+    .btn-primary:hover { background-color: #059669; color: white; }
+
+    /* Setpoint / status cards */
+    .setpoint-card {
+      background-color: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 0.5rem;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    /* Tab bar */
+    .tab-bar {
+      display: flex;
+      background-color: #0f172a;
+      border-bottom: 1px solid #1e293b;
+      padding: 0 0.25rem;
+      margin-bottom: 1.5rem;
+    }
+    .tab-btn {
+      padding: 0.75rem 1.25rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #94a3b8;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      font-family: inherit;
+      margin-bottom: -1px;
+    }
+    .tab-btn:hover { color: #cbd5e1; }
+    .tab-btn.active { color: #34d399; border-bottom-color: #34d399; }
+
+    /* Tab panels */
+    .tab-panel {
+      background: linear-gradient(135deg, rgba(15,23,42,0.6) 0%, rgba(15,23,42,0.3) 100%);
+      border: 1px solid rgba(30,41,59,0.8);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 30px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03);
+      height: 680px;
+      overflow: hidden;
+    }
+    .tab-panel.tab-scroll { overflow-y: auto; }
+
+    /* Readiness row */
+    .readiness-row {
+      background-color: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 0.5rem;
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+  </style>
+</head>
+<body class="min-h-screen p-4 md:p-6 lg:p-8 flex justify-center items-center w-full">
+  <div class="max-w-[90rem] w-full flex flex-col gap-0 justify-center">
+
+    <!-- Tab Bar -->
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('overview', this)">Overview</button>
+      <button class="tab-btn" onclick="switchTab('control', this)">Control / Modes</button>
+      <button class="tab-btn" onclick="switchTab('readiness', this)">Start Readiness</button>
+      <button class="tab-btn" onclick="switchTab('alarms', this)">Alarms</button>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- Tab: Overview                                                 -->
+    <!-- ============================================================ -->
+    <div id="tab-overview" class="tab-panel flex flex-col lg:flex-row gap-6" style="display:flex;">
+
+      <!-- Left Panel: Asset Visualization -->
+      <div class="lg:w-72 flex-shrink-0 flex flex-col gap-6">
+        <div class="bg-[#0f172a] border border-slate-800 rounded-lg p-5 flex flex-col items-center h-full">
+
+          <!-- One-line: Generator → Breaker → Bus -->
+          <div class="w-full flex flex-col items-center gap-0 my-2">
+            <!-- Bus bar (top) -->
+            <div class="w-24 h-1.5 bg-slate-500 rounded"></div>
+            <!-- Bus connection down -->
+            <div class="w-0.5 h-6 bg-slate-600"></div>
+            <!-- Breaker symbol -->
+            <div class="flex flex-col items-center text-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.4)]">
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="8" y="8" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2"/>
+                <line x1="12" y1="20" x2="20" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <!-- Down to generator -->
+            <div class="w-0.5 h-6 bg-slate-600"></div>
+            <!-- Generator circle -->
+            <div class="w-24 h-24 rounded-full border-2 border-emerald-500 bg-emerald-500/10 flex items-center justify-center text-emerald-400 drop-shadow-[0_0_10px_rgba(16,185,129,0.3)]">
+              <svg xmlns="http://www.w3.org/2000/svg" width="44" height="22" viewBox="0 0 44 22" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M 4 11 Q 12 -1 22 11 T 40 11"></path>
+              </svg>
+            </div>
+            <!-- Ground line -->
+            <div class="w-0.5 h-4 bg-slate-600"></div>
+            <div class="w-16 h-0.5 bg-slate-500"></div>
+          </div>
+
+          <!-- Asset label -->
+          <div class="mt-3 mb-6 px-4 py-1.5 bg-emerald-500/10 text-emerald-400 text-base font-bold rounded-full border border-emerald-500/20 flex items-center gap-2">
+            <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
+            EDG
+          </div>
+
+          <!-- Command stack -->
+          <div class="w-full flex flex-col gap-2 mt-auto">
+            <button class="btn-control btn-primary">Start</button>
+            <button class="btn-control">Stop</button>
+            <button class="btn-control">Auto</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column -->
+      <div class="flex-grow flex flex-col gap-4">
+
+        <!-- Header Bar -->
+        <div class="flex items-center justify-between bg-[#0f172a] border border-slate-800 rounded-lg px-5 py-3">
+          <div class="flex items-center gap-4">
+            <span class="text-lg font-bold text-white">Backup Diesel &mdash; EDG</span>
+            <span class="px-3 py-1 bg-emerald-500/15 text-emerald-400 text-xs font-bold rounded-full border border-emerald-500/30 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Running
+            </span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button class="btn-control btn-primary" style="width:auto; padding:0.375rem 0.75rem; font-size:0.75rem;">Start</button>
+            <button class="btn-control" style="width:auto; padding:0.375rem 0.75rem; font-size:0.75rem;">Stop</button>
+            <button class="btn-control" style="width:auto; padding:0.375rem 0.75rem; font-size:0.75rem;">Auto</button>
+            <button class="btn-control" style="width:auto; padding:0.375rem 0.75rem; font-size:0.75rem;">Alarm Ack</button>
+          </div>
+        </div>
+
+        <!-- Overview Status Cards: 2 rows of 3 -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+
+          <!-- Operating State -->
+          <div class="setpoint-card">
+            <div class="flex items-center gap-3">
+              <div class="icon-box bg-emerald-500/10 text-emerald-400 h-9 w-9"><i class="fa-solid fa-play text-lg"></i></div>
+              <span class="text-sm text-slate-400 font-medium">Operating State</span>
+            </div>
+            <div class="text-xl font-bold text-emerald-400">Running</div>
+            <div class="text-xs text-slate-500">Auto Start Stop State: RUNNING</div>
+          </div>
+
+          <!-- Control Mode -->
+          <div class="setpoint-card">
+            <div class="flex items-center gap-3">
+              <div class="icon-box bg-blue-500/10 text-blue-400 h-9 w-9"><i class="fa-solid fa-sliders text-lg"></i></div>
+              <span class="text-sm text-slate-400 font-medium">Control Mode</span>
+            </div>
+            <div class="text-xl font-bold text-blue-400">AUTO</div>
+            <div class="text-xs text-slate-500">Engine Operating Mode: AUTO</div>
+          </div>
+
+          <!-- Control Authority -->
+          <div class="setpoint-card">
+            <div class="flex items-center gap-3">
+              <div class="icon-box bg-emerald-500/10 text-emerald-400 h-9 w-9"><i class="fa-solid fa-tower-broadcast text-lg"></i></div>
+              <span class="text-sm text-slate-400 font-medium">Control Authority</span>
+            </div>
+            <div class="text-xl font-bold text-emerald-400">Allowed</div>
+            <div class="text-xs text-slate-500">Mode = AUTO &amp; Not in Auto = FALSE</div>
+          </div>
+
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+
+          <!-- Ready to Start -->
+          <div class="setpoint-card">
+            <div class="flex items-center gap-3">
+              <div class="icon-box bg-emerald-500/10 text-emerald-400 h-9 w-9"><i class="fa-solid fa-circle-check text-lg"></i></div>
+              <span class="text-sm text-slate-400 font-medium">Ready to Start</span>
+            </div>
+            <div class="text-xl font-bold text-emerald-400">Yes</div>
+            <div class="text-xs text-slate-500">Starter Mode: Start Not Requested</div>
+          </div>
+
+          <!-- Shutdown Active -->
+          <div class="setpoint-card">
+            <div class="flex items-center gap-3">
+              <div class="icon-box bg-emerald-500/10 text-emerald-400 h-9 w-9"><i class="fa-solid fa-shield-halved text-lg"></i></div>
+              <span class="text-sm text-slate-400 font-medium">Shutdown Active</span>
+            </div>
+            <div class="text-xl font-bold text-emerald-400">No</div>
+            <div class="text-xs text-slate-500">No active shutdown conditions</div>
+          </div>
+
+          <!-- Running -->
+          <div class="setpoint-card">
+            <div class="flex items-center gap-3">
+              <div class="icon-box bg-emerald-500/10 text-emerald-400 h-9 w-9"><i class="fa-solid fa-gauge-high text-lg"></i></div>
+              <span class="text-sm text-slate-400 font-medium">Running</span>
+            </div>
+            <div class="text-xl font-bold text-emerald-400">Yes</div>
+            <div class="text-xs text-slate-500">Operating Mode = RUN</div>
+          </div>
+
+        </div>
+
+      </div>
+    </div><!-- end tab-overview -->
+
+    <!-- ============================================================ -->
+    <!-- Tab: Control / Modes                                          -->
+    <!-- ============================================================ -->
+    <div id="tab-control" class="tab-panel" style="display:none;">
+      <div class="flex flex-col gap-4">
+
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Command Permissives</div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+
+          <div class="metric-card">
+            <div class="icon-box bg-blue-500/10 text-blue-400"><i class="fa-solid fa-sliders text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Engine Operating Mode</div>
+              <div class="metric-value text-blue-400">AUTO</div>
+              <div class="text-xs text-slate-500 mt-0.5">Register 0x0000</div>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="icon-box bg-blue-500/10 text-blue-400"><i class="fa-solid fa-toggle-on text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Control Switch Position</div>
+              <div class="metric-value text-blue-400">AUTO</div>
+              <div class="text-xs text-slate-500 mt-0.5">Register 0x00A2</div>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="icon-box bg-emerald-500/10 text-emerald-400"><i class="fa-solid fa-circle-check text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Generator Not in Auto</div>
+              <div class="metric-value text-emerald-400">FALSE</div>
+              <div class="text-xs text-slate-500 mt-0.5">Register 0x00263</div>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="icon-box bg-emerald-500/10 text-emerald-400"><i class="fa-solid fa-shield-halved text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Shutdown Active</div>
+              <div class="metric-value text-emerald-400">FALSE</div>
+              <div class="text-xs text-slate-500 mt-0.5">Register 0x00281</div>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="icon-box bg-emerald-500/10 text-emerald-400"><i class="fa-solid fa-tower-broadcast text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Master Control Allowed</div>
+              <div class="metric-value text-emerald-400">TRUE</div>
+              <div class="text-xs text-slate-500 mt-0.5">Mode=AUTO &amp; Not in Auto=FALSE</div>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="icon-box bg-blue-500/10 text-blue-400"><i class="fa-solid fa-terminal text-xl"></i></div>
+            <div class="metric-content">
+              <div class="metric-label">Command Status</div>
+              <div class="metric-value text-blue-400">AUTO</div>
+              <div class="text-xs text-slate-500 mt-0.5">Last write → 0x006C = 1</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Command Reference -->
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-2">Command Reference</div>
+        <div class="bg-[#0f172a] border border-slate-800 rounded-lg p-4">
+          <div class="grid grid-cols-3 gap-4">
+            <div class="flex flex-col gap-1">
+              <span class="text-xs text-slate-500 font-semibold uppercase">Start</span>
+              <span class="text-sm text-white font-mono">Write 2 → 0x006C</span>
+            </div>
+            <div class="flex flex-col gap-1">
+              <span class="text-xs text-slate-500 font-semibold uppercase">Stop</span>
+              <span class="text-sm text-white font-mono">Write 0 → 0x006C</span>
+            </div>
+            <div class="flex flex-col gap-1">
+              <span class="text-xs text-slate-500 font-semibold uppercase">Auto</span>
+              <span class="text-sm text-white font-mono">Write 1 → 0x006C</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="bg-[#0f172a] border border-slate-800 rounded-lg p-4 mt-2">
+          <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Control Logic Notes</div>
+          <ul class="text-sm text-slate-400 space-y-1.5 list-disc list-inside">
+            <li>Master control is permitted only when Mode = AUTO and Generator Not in Auto = FALSE</li>
+            <li>Stop command disables all auto-start logic until Auto or Start is issued</li>
+            <li>No other commands are exposed beyond Start / Stop / Auto</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- Tab: Start Readiness                                          -->
+    <!-- ============================================================ -->
+    <div id="tab-readiness" class="tab-panel" style="display:none;">
+      <div class="flex flex-col gap-4">
+
+        <!-- Overall readiness -->
+        <div class="flex items-center gap-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg px-5 py-4">
+          <i class="fa-solid fa-circle-check text-3xl text-emerald-400"></i>
+          <div>
+            <div class="text-lg font-bold text-emerald-400">Ready to Start</div>
+            <div class="text-sm text-slate-400">All start preconditions satisfied. Unit will respond to a Start command.</div>
+          </div>
+        </div>
+
+        <!-- Primary driver -->
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-2">Primary Driver</div>
+        <div class="readiness-row">
+          <div class="flex items-center gap-3">
+            <div class="icon-box bg-emerald-500/10 text-emerald-400 h-9 w-9"><i class="fa-solid fa-key text-lg"></i></div>
+            <div>
+              <div class="text-sm font-semibold text-white">Starter Mode</div>
+              <div class="text-xs text-slate-500">Register 0x021A</div>
+            </div>
+          </div>
+          <span class="px-3 py-1 bg-emerald-500/15 text-emerald-400 text-sm font-bold rounded-full border border-emerald-500/30">Start Not Requested</span>
+        </div>
+
+        <!-- Supporting states -->
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-2">Supporting States</div>
+        <div class="flex flex-col gap-2">
+
+          <div class="readiness-row">
+            <div class="flex items-center gap-3">
+              <div class="icon-box bg-emerald-500/10 text-emerald-400 h-9 w-9"><i class="fa-solid fa-shield-halved text-lg"></i></div>
+              <div>
+                <div class="text-sm font-semibold text-white">Shutdown Active</div>
+                <div class="text-xs text-slate-500">Register 0x00281</div>
+              </div>
+            </div>
+            <span class="px-3 py-1 bg-emerald-500/15 text-emerald-400 text-sm font-bold rounded-full border border-emerald-500/30">Inactive</span>
+          </div>
+
+          <div class="readiness-row">
+            <div class="flex items-center gap-3">
+              <div class="icon-box bg-emerald-500/10 text-emerald-400 h-9 w-9"><i class="fa-solid fa-circle-xmark text-lg"></i></div>
+              <div>
+                <div class="text-sm font-semibold text-white">Hard Shutdown</div>
+                <div class="text-xs text-slate-500">Register 0x0003</div>
+              </div>
+            </div>
+            <span class="px-3 py-1 bg-emerald-500/15 text-emerald-400 text-sm font-bold rounded-full border border-emerald-500/30">Inactive</span>
+          </div>
+
+          <div class="readiness-row">
+            <div class="flex items-center gap-3">
+              <div class="icon-box bg-emerald-500/10 text-emerald-400 h-9 w-9"><i class="fa-solid fa-circle-xmark text-lg"></i></div>
+              <div>
+                <div class="text-sm font-semibold text-white">Soft Shutdown</div>
+                <div class="text-xs text-slate-500">Register 0x0004</div>
+              </div>
+            </div>
+            <span class="px-3 py-1 bg-emerald-500/15 text-emerald-400 text-sm font-bold rounded-full border border-emerald-500/30">Inactive</span>
+          </div>
+
+          <div class="readiness-row">
+            <div class="flex items-center gap-3">
+              <div class="icon-box bg-emerald-500/10 text-emerald-400 h-9 w-9"><i class="fa-solid fa-bolt text-lg"></i></div>
+              <div>
+                <div class="text-sm font-semibold text-white">Emergency Shutdown</div>
+                <div class="text-xs text-slate-500">Register 0x0215</div>
+              </div>
+            </div>
+            <span class="px-3 py-1 bg-emerald-500/15 text-emerald-400 text-sm font-bold rounded-full border border-emerald-500/30">Inactive</span>
+          </div>
+
+          <div class="readiness-row">
+            <div class="flex items-center gap-3">
+              <div class="icon-box bg-blue-500/10 text-blue-400 h-9 w-9"><i class="fa-solid fa-sliders text-lg"></i></div>
+              <div>
+                <div class="text-sm font-semibold text-white">Engine Mode</div>
+                <div class="text-xs text-slate-500">Register 0x0000</div>
+              </div>
+            </div>
+            <span class="px-3 py-1 bg-blue-500/15 text-blue-400 text-sm font-bold rounded-full border border-blue-500/30">AUTO</span>
+          </div>
+
+        </div>
+
+        <!-- Derived conclusion -->
+        <div class="bg-[#0f172a] border border-slate-800 rounded-lg p-4 mt-2">
+          <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Derived: Ready to Start</div>
+          <div class="text-sm text-slate-400">
+            <span class="text-emerald-400 font-semibold">TRUE</span> &mdash; Starter Mode = "Start Not Requested" AND Mode = AUTO AND no shutdown conditions active.
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- Tab: Alarms                                                   -->
+    <!-- ============================================================ -->
+    <div id="tab-alarms" class="tab-panel tab-scroll" style="display:none;">
+      <div class="flex flex-col gap-4">
+
+        <!-- Summary bar -->
+        <div class="flex gap-4">
+          <div class="px-4 py-2 bg-slate-800/60 border border-slate-700/50 rounded-lg flex items-center gap-2">
+            <i class="fa-solid fa-circle-check text-emerald-400"></i>
+            <span class="text-sm font-semibold text-emerald-400">No Active Trips</span>
+          </div>
+          <div class="px-4 py-2 bg-slate-800/60 border border-slate-700/50 rounded-lg flex items-center gap-2">
+            <i class="fa-solid fa-triangle-exclamation text-slate-400"></i>
+            <span class="text-sm font-semibold text-slate-400">No Active Alarms</span>
+          </div>
+          <div class="px-4 py-2 bg-slate-800/60 border border-slate-700/50 rounded-lg flex items-center gap-2">
+            <i class="fa-solid fa-circle-exclamation text-slate-400"></i>
+            <span class="text-sm font-semibold text-slate-400">No Active Warnings</span>
+          </div>
+        </div>
+
+        <!-- Shutdown / Trip -->
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-2">Shutdown / Trip</div>
+        <div class="bg-[#0f172a] border border-slate-800 rounded-lg overflow-hidden">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-slate-800 text-left">
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Condition</th>
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Register</th>
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+                <td class="px-4 py-2.5 text-slate-300 font-medium">Shutdown Active</td>
+                <td class="px-4 py-2.5 text-slate-500 font-mono text-xs">0x00281</td>
+                <td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs font-semibold rounded-full">Inactive</span></td>
+              </tr>
+              <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+                <td class="px-4 py-2.5 text-slate-300 font-medium">Hard Shutdown</td>
+                <td class="px-4 py-2.5 text-slate-500 font-mono text-xs">0x0003</td>
+                <td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs font-semibold rounded-full">Inactive</span></td>
+              </tr>
+              <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+                <td class="px-4 py-2.5 text-slate-300 font-medium">Soft Shutdown</td>
+                <td class="px-4 py-2.5 text-slate-500 font-mono text-xs">0x0004</td>
+                <td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs font-semibold rounded-full">Inactive</span></td>
+              </tr>
+              <tr class="hover:bg-slate-800/30">
+                <td class="px-4 py-2.5 text-slate-300 font-medium">Emergency Shutdown</td>
+                <td class="px-4 py-2.5 text-slate-500 font-mono text-xs">0x0215</td>
+                <td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs font-semibold rounded-full">Inactive</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Control Blocking -->
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-2">Control Blocking</div>
+        <div class="bg-[#0f172a] border border-slate-800 rounded-lg overflow-hidden">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-slate-800 text-left">
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Condition</th>
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Register</th>
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+                <td class="px-4 py-2.5 text-slate-300 font-medium">Generator Not in Auto</td>
+                <td class="px-4 py-2.5 text-slate-500 font-mono text-xs">0x00263</td>
+                <td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs font-semibold rounded-full">Inactive</span></td>
+              </tr>
+              <tr class="hover:bg-slate-800/30">
+                <td class="px-4 py-2.5 text-slate-300 font-medium">Engine Aux Switch / E-Stop</td>
+                <td class="px-4 py-2.5 text-slate-500 font-mono text-xs">0x00262</td>
+                <td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs font-semibold rounded-full">Inactive</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Start Fail / Protection -->
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-2">Start Fail / Protection</div>
+        <div class="bg-[#0f172a] border border-slate-800 rounded-lg overflow-hidden">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-slate-800 text-left">
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Condition</th>
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Register</th>
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+                <td class="px-4 py-2.5 text-slate-300 font-medium">Overcrank</td>
+                <td class="px-4 py-2.5 text-slate-500 font-mono text-xs">0x00264</td>
+                <td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs font-semibold rounded-full">Inactive</span></td>
+              </tr>
+              <tr class="hover:bg-slate-800/30">
+                <td class="px-4 py-2.5 text-slate-300 font-medium">Overspeed</td>
+                <td class="px-4 py-2.5 text-slate-500 font-mono text-xs">0x00265</td>
+                <td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs font-semibold rounded-full">Inactive</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Thermal / Mechanical -->
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-2">Thermal / Mechanical</div>
+        <div class="bg-[#0f172a] border border-slate-800 rounded-lg overflow-hidden">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-slate-800 text-left">
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Condition</th>
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Register</th>
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+                <td class="px-4 py-2.5 text-slate-300 font-medium">High Coolant Temp</td>
+                <td class="px-4 py-2.5 text-slate-500 font-mono text-xs">0x00269</td>
+                <td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs font-semibold rounded-full">Inactive</span></td>
+              </tr>
+              <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+                <td class="px-4 py-2.5 text-slate-300 font-medium">Low Oil Pressure</td>
+                <td class="px-4 py-2.5 text-slate-500 font-mono text-xs">0x00271</td>
+                <td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs font-semibold rounded-full">Inactive</span></td>
+              </tr>
+              <tr class="hover:bg-slate-800/30">
+                <td class="px-4 py-2.5 text-slate-300 font-medium">Low Coolant Level</td>
+                <td class="px-4 py-2.5 text-slate-500 font-mono text-xs">0x00273</td>
+                <td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs font-semibold rounded-full">Inactive</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Other -->
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-2">Other</div>
+        <div class="bg-[#0f172a] border border-slate-800 rounded-lg overflow-hidden">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-slate-800 text-left">
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Condition</th>
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Register</th>
+                <th class="px-4 py-2.5 text-xs text-slate-500 font-semibold">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+                <td class="px-4 py-2.5 text-slate-300 font-medium">Air Damper Shutdown</td>
+                <td class="px-4 py-2.5 text-slate-500 font-mono text-xs">0x0026C</td>
+                <td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs font-semibold rounded-full">Inactive</span></td>
+              </tr>
+              <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+                <td class="px-4 py-2.5 text-slate-300 font-medium">High Battery Voltage</td>
+                <td class="px-4 py-2.5 text-slate-500 font-mono text-xs">0x0026E</td>
+                <td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs font-semibold rounded-full">Inactive</span></td>
+              </tr>
+              <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+                <td class="px-4 py-2.5 text-slate-300 font-medium">Low Fuel Level</td>
+                <td class="px-4 py-2.5 text-slate-500 font-mono text-xs">0x00275</td>
+                <td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs font-semibold rounded-full">Inactive</span></td>
+              </tr>
+              <tr class="hover:bg-slate-800/30">
+                <td class="px-4 py-2.5 text-slate-300 font-medium">SCR Fault</td>
+                <td class="px-4 py-2.5 text-slate-500 font-mono text-xs">0x00278</td>
+                <td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-xs font-semibold rounded-full">Inactive</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function switchTab(name, btn) {
+      document.querySelectorAll('.tab-panel').forEach(p => p.style.display = 'none');
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      var panel = document.getElementById('tab-' + name);
+      panel.style.display = name === 'overview' ? 'flex' : 'block';
+      btn.classList.add('active');
+    }
+  </script>
+</body>
+</html>

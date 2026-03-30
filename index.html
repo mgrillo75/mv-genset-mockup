@@ -62,6 +62,11 @@
       box-shadow: 0 12px 40px rgba(59, 130, 246, 0.1), inset 0 1px 0 rgba(255,255,255,0.05);
     }
 
+    .asset-card.diesel:hover {
+      border-color: rgba(251, 191, 36, 0.4);
+      box-shadow: 0 12px 40px rgba(251, 191, 36, 0.1), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
     .asset-icon {
       width: 120px;
       height: 120px;
@@ -82,6 +87,12 @@
       border: 2px solid rgba(59, 130, 246, 0.4);
       color: #3b82f6;
     }
+
+    .asset-icon.diesel {
+      background: radial-gradient(circle, rgba(251, 191, 36, 0.15) 0%, transparent 70%);
+      border: 2px solid rgba(251, 191, 36, 0.4);
+      color: #fbbf24;
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-8">
@@ -91,7 +102,7 @@
     <p class="text-slate-400 text-sm">Select an asset to view its control panel</p>
   </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl w-full">
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl w-full">
 
     <!-- MV Genset -->
     <a href="modern-genset-panel-v3.html" class="asset-card genset">
@@ -122,6 +133,31 @@
       <div class="text-center">
         <div class="text-xl font-bold text-white mb-1">Sync Condenser</div>
         <div class="text-sm text-slate-400">SC1 &mdash; Synchronous Condenser</div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="px-3 py-1 bg-emerald-500/15 text-emerald-400 text-xs font-bold rounded-full border border-emerald-500/30 flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Running
+        </span>
+      </div>
+    </a>
+
+    <!-- Backup Diesel -->
+    <a href="backup-diesel-screen.html" class="asset-card diesel">
+      <div class="asset-icon diesel">
+        <svg width="52" height="52" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Diesel engine / generator simplified symbol -->
+          <rect x="6" y="10" width="20" height="12" rx="2" stroke="currentColor" stroke-width="2"/>
+          <line x1="16" y1="4" x2="16" y2="10" stroke="currentColor" stroke-width="2"/>
+          <line x1="16" y1="22" x2="16" y2="28" stroke="currentColor" stroke-width="2"/>
+          <line x1="11" y1="28" x2="21" y2="28" stroke="currentColor" stroke-width="2"/>
+          <line x1="10" y1="16" x2="14" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="14" y1="14" x2="18" y2="18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="18" y1="18" x2="22" y2="16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="text-center">
+        <div class="text-xl font-bold text-white mb-1">Backup Diesel</div>
+        <div class="text-sm text-slate-400">EDG &mdash; Emergency Diesel Generator</div>
       </div>
       <div class="flex items-center gap-2">
         <span class="px-3 py-1 bg-emerald-500/15 text-emerald-400 text-xs font-bold rounded-full border border-emerald-500/30 flex items-center gap-1.5">
